@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">MOBA 分组助手</string>
+    <string name="app_title">MOBA 分组助手 Pro</string>
+    <string name="app_subtitle">动态角色池 · 智能避让上一局 · 毫秒级随机</string>
+    <string name="header_icon">⚔</string>
+    <string name="role_pool_heading">📝  角色池设置</string>
+    <string name="reset_default">恢复默认</string>
+    <string name="role_pool_hint_with_icon">💡  支持自定义职业名称；角色之间可用顿号、逗号或空格分隔。修改会自动保存。</string>
+    <string name="rules_heading">⚙  分组规则</string>
+    <string name="allow_duplicate">允许两组使用相同角色</string>
+    <string name="mirror_mode">镜像模式</string>
+    <string name="duplicate_hint_with_icon">💡  开启后，A/B 两组会独立抽取，各分路可能使用同一个角色。</string>
+    <string name="last_game_label">上一局使用过的角色（选填）</string>
+    <string name="last_game_placeholder">例如：温迪，胡桃，钟离，行秋</string>
+    <string name="last_game_hint_with_icon">💡  填入上一局角色后，本次抽中它们的权重会降至其他角色的 1/10。</string>
+    <string name="generate">🎲  开始随机分组</string>
+    <string name="result_title">分组结果</string>
+    <string name="result_heading">✓  分组结果</string>
+    <string name="group_a">Group A</string>
+    <string name="group_b">Group B</string>
+    <string name="seed_format">种子：%1$d</string>
+    <string name="players_format">玩家　%1$s</string>
+    <string name="roles_format">角色　%1$s</string>
+    <string name="copy_result">复制分组结果</string>
+    <string name="copied">已复制到剪贴板</string>
+    <string name="reset_title">恢复默认角色池？</string>
+    <string name="reset_message">当前的自定义设置将会丢失。</string>
+    <string name="cancel">取消</string>
+    <string name="error_title">无法生成分组</string>
+    <string name="confirm">好</string>
+</resources>

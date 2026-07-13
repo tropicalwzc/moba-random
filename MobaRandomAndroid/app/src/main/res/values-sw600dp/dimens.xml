@@ -1,0 +1,7 @@
+<resources>
+    <dimen name="page_horizontal_padding">96dp</dimen>
+    <dimen name="page_vertical_padding">32dp</dimen>
+    <dimen name="card_content_padding">24dp</dimen>
+    <dimen name="section_spacing">24dp</dimen>
+</resources>
+

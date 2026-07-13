@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOBA 游戏分组助手 Pro</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --success: #10b981;
+            --warning: #f59e0b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 650px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--accent);
+            margin-bottom: 5px;
+            font-size: 1.8rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .btn-link {
+            background: none;
+            border: none;
+            color: var(--accent);
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: underline;
+            padding: 0;
+        }
+        .btn-link:hover { color: var(--accent-hover); }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        textarea {
+            width: 100%;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border);
+            color: var(--text-primary);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            resize: vertical;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* 自定义 Checkbox 样式 */
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-wrapper input {
+            display: none;
+        }
+
+        .checkmark {
+            width: 20px;
+            height: 20px;
+            background-color: var(--bg-color);
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .checkbox-wrapper input:checked + .checkmark {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .checkmark::after {
+            content: '✓';
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            display: none;
+        }
+
+        .checkbox-wrapper input:checked + .checkmark::after {
+            display: block;
+        }
+
+        .checkbox-label {
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .btn {
+            width: 100%;
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            margin-top: 10px;
+        }
+
+        .btn:hover { background-color: var(--accent-hover); }
+        .btn:active { transform: scale(0.98); }
+
+        .result-area {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .seed-info {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-align: right;
+            margin-bottom: 15px;
+            font-family: monospace;
+        }
+
+        pre {
+            background-color: var(--bg-color);
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent);
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            margin: 0;
+        }
+
+        .copy-btn {
+            background-color: transparent;
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            margin-top: 15px;
+            width: 100%;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        .copy-btn:hover {
+            background-color: var(--accent);
+            color: white;
+        }
+
+        .hint {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            line-height: 1.4;
+        }
+        
+        .mode-badge {
+            display: inline-block;
+            background-color: var(--warning);
+            color: #000;
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 8px;
+            vertical-align: middle;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>⚔️ MOBA 分组助手 Pro</h1>
+    <div class="subtitle">动态角色池 · 智能避让上一局 · 毫秒级真随机</div>
+
+    <!-- 角色池设置 -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">📝 角色池设置</h3>
+            <button class="btn-link" onclick="resetDefaultPool()">恢复默认</button>
+        </div>
+        <textarea id="rolePoolInput" rows="6" placeholder="格式：职业名：角色1、角色2、角色3"></textarea>
+        <div class="hint">💡 提示：支持自定义职业名称。角色之间可用顿号(、)、逗号(,)或空格分隔。修改后会自动保存。</div>
+    </div>
+
+    <!-- 分组规则设置 -->
+    <div class="card">
+        <h3 class="card-title" style="margin-top: 0;">⚙️ 分组规则</h3>
+        
+        <label class="checkbox-wrapper">
+            <input type="checkbox" id="allowDuplicate">
+            <span class="checkmark"></span>
+            <span class="checkbox-label">允许两组使用相同角色 <span class="mode-badge" id="modeBadge">镜像模式</span></span>
+        </label>
+        <div class="hint" style="margin-bottom: 15px;">💡 开启后，A/B两组可能分配到同一角色（如双方射手都是温迪），只需保证各分路分配正确即可。</div>
+
+        <label for="lastGameInput">上一局使用过的角色 (选填)：</label>
+        <textarea id="lastGameInput" rows="2" placeholder="例如：温迪, 胡桃, 钟离, 行秋, 甘雨, 雷神, 龙王, 仆人"></textarea>
+        <div class="hint">💡 提示：填入上一局用过的角色，系统将大幅降低再次抽中它们的概率。</div>
+        
+        <button class="btn" onclick="generateGroups()">🎲 开始随机分组</button>
+    </div>
+
+    <!-- 结果展示 -->
+    <div class="result-area" id="resultArea">
+        <div class="seed-info" id="seedInfo"></div>
+        <pre id="outputText"></pre>
+        <button class="copy-btn" onclick="copyResult()">📋 复制分组结果</button>
+    </div>
+</div>
+
+<script>
+    // 默认角色池文本
+    const DEFAULT_POOL_TEXT = `射手：温迪、甘雨、宵宫、提纳里、公子
+打野：绫华、胡桃、雷神、刻晴、牢大
+中路：希格雯、钟离、八重、龙王、少女、夜兰、纳西妲
+战士：菲林斯、行秋、女仆、仆人、班尼特、丝柯克、点刀、魈`;
+
+    // 初始化：从 localStorage 读取或加载默认值
+    window.onload = function() {
+        const savedPool = localStorage.getItem('moba_role_pool');
+        document.getElementById('rolePoolInput').value = savedPool || DEFAULT_POOL_TEXT;
+        
+        // 监听 checkbox 变化，更新 UI 提示
+        document.getElementById('allowDuplicate').addEventListener('change', function() {
+            document.getElementById('modeBadge').style.display = this.checked ? 'inline-block' : 'none';
+        });
+
+        // 页面加载时自动执行一次分组
+        generateGroups();
+    };
+
+    function resetDefaultPool() {
+        if(confirm('确定要恢复默认角色池吗？自定义的设置将会丢失。')) {
+            document.getElementById('rolePoolInput').value = DEFAULT_POOL_TEXT;
+            localStorage.setItem('moba_role_pool', DEFAULT_POOL_TEXT);
+            generateGroups();
+        }
+    }
+
+    // 解析角色池文本
+    function parseRolePool(text) {
+        const lines = text.split('\n');
+        const pool = {};
+        
+        lines.forEach(line => {
+            line = line.trim();
+            if (!line) return;
+            // 匹配 "职业名：角色列表" 或 "职业名: 角色列表"
+            const match = line.match(/^([^：:]+)[：:]\s*(.+)$/);
+            if (match) {
+                const roleName = match[1].trim();
+                const charsStr = match[2].trim();
+                // 支持中文顿号、中文逗号、英文逗号、空格作为分隔符
+                const chars = charsStr.split(/[、,，\s]+/).filter(c => c.length > 0);
+                if (chars.length > 0) {
+                    pool[roleName] = chars;
+                }
+            }
+        });
+        return pool;
+    }
+
+    // Mulberry32 伪随机数生成器 (使用毫秒时间戳作为种子)
+    function mulberry32(a) {
+        return function() {
+            var t = a += 0x6D2B79F5;
+            t = Math.imul(t ^ t >>> 15, t | 1);
+            t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+            return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        }
+    }
+
+    // 核心：加权随机选取 1 个角色
+    function pickOneRole(pool, lastGameRoles, rng) {
+        let available = pool.map(role => ({
+            name: role,
+            // 上一局出现的角色权重降为 0.1，未出现的为 1.0 (即10倍概率选取新角色)
+            weight: lastGameRoles.includes(role) ? 0.1 : 1.0
+        }));
+        
+        let totalWeight = available.reduce((sum, item) => sum + item.weight, 0);
+        let r = rng() * totalWeight;
+        let selectedIndex = -1;
+        
+        for (let j = 0; j < available.length; j++) {
+            r -= available[j].weight;
+            if (r <= 0) {
+                selectedIndex = j;
+                break;
+            }
+        }
+        if (selectedIndex === -1) selectedIndex = available.length - 1;
+        
+        return available[selectedIndex].name;
+    }
+
+    // 选取 2 个不重复的角色 (用于未开启允许重复模式时)
+    function pickTwoDistinct(pool, lastGameRoles, rng) {
+        let tempPool = [...pool];
+        let role1 = pickOneRole(tempPool, lastGameRoles, rng);
+        
+        // 从临时池中移除已选角色，确保第二次抽取不重复
+        tempPool = tempPool.filter(r => r !== role1);
+        
+        if (tempPool.length === 0) {
+            return [role1, role1]; // 兜底，理论上外层已校验长度 >= 2
+        }
+        
+        let role2 = pickOneRole(tempPool, lastGameRoles, rng);
+        return [role1, role2];
+    }
+
+    // Fisher-Yates 洗牌算法 (使用自定义 rng)
+    function shuffle(array, rng) {
+        let arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            let j = Math.floor(rng() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function generateGroups() {
+        // 1. 获取种子并初始化 RNG
+        const seed = Date.now();
+        const rng = mulberry32(seed);
+        document.getElementById('seedInfo').textContent = `随机种子 (Timestamp): ${seed}`;
+
+        // 2. 解析当前角色池
+        const poolText = document.getElementById('rolePoolInput').value;
+        const rolePool = parseRolePool(poolText);
+        localStorage.setItem('moba_role_pool', poolText); // 自动保存
+
+        const roleKeys = Object.keys(rolePool);
+        if (roleKeys.length === 0) {
+            alert("⚠️ 角色池格式不正确或为空！\n请确保每行格式为：职业名：角色1、角色2");
+            return;
+        }
+
+        // 3. 解析上一局角色
+        const lastGameInput = document.getElementById('lastGameInput').value;
+        const lastGameRoles = lastGameInput.match(/[\u4e00-\u9fa5a-zA-Z]+/g) || [];
+
+        // 4. 获取开关状态
+        const allowDuplicate = document.getElementById('allowDuplicate').checked;
+
+        // 5. 按职业分配角色
+        const groupA = {};
+        const groupB = {};
+        let hasError = false;
+
+        roleKeys.forEach(key => {
+            const poolForRole = rolePool[key];
+            
+            // 如果不允许重复，且该职业角色少于2个，则报错
+            if (!allowDuplicate && poolForRole.length < 2) {
+                alert(`⚠️ 职业 [${key}] 的角色数量不足 2 个，且未开启“允许重复”模式，无法分配给 A/B 两组！\n请补充角色或勾选“允许两组使用相同角色”。`);
+                hasError = true;
+                return;
+            }
+            
+            let roleA, roleB;
+            if (allowDuplicate) {
+                // 允许重复：A和B独立抽取，可能相同
+                roleA = pickOneRole(poolForRole, lastGameRoles, rng);
+                roleB = pickOneRole(poolForRole, lastGameRoles, rng);
+            } else {
+                // 不允许重复：抽取两个不同的角色，并随机分配给A和B
+                const pair = pickTwoDistinct(poolForRole, lastGameRoles, rng);
+                if (rng() > 0.5) {
+                    roleA = pair[0];
+                    roleB = pair[1];
+                } else {
+                    roleA = pair[1];
+                    roleB = pair[0];
+                }
+            }
+            
+            groupA[key] = roleA;
+            groupB[key] = roleB;
+        });
+
+        if (hasError) return;
+
+        // 6. 分配玩家序号并打乱 (根据职业数量动态计算总人数)
+        const numRoles = roleKeys.length;
+        const totalPlayers = numRoles * 2;
+        const players = Array.from({length: totalPlayers}, (_, i) => i + 1);
+        const shuffledPlayers = shuffle(players, rng);
+        
+        const playersA = shuffledPlayers.slice(0, numRoles);
+        const playersB = shuffledPlayers.slice(numRoles);
+
+        // 7. 格式化输出 (严格按照要求的格式，使用中文逗号)
+        const rolesA_str = roleKeys.map(k => groupA[k]).join('，');
+        const rolesB_str = roleKeys.map(k => groupB[k]).join('，');
+        
+        const resultText = 
+`Group A
+${playersA.join('，')}
+${rolesA_str}
+
+Group B
+${playersB.join('，')}
+${rolesB_str}`;
+
+        // 8. 渲染到页面
+        document.getElementById('outputText').textContent = resultText;
+        document.getElementById('resultArea').style.display = 'block';
+        
+        // 平滑滚动到结果区域
+        document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function copyResult() {
+        const text = document.getElementById('outputText').textContent;
+        navigator.clipboard.writeText(text).then(() => {
+            const btn = document.querySelector('.copy-btn');
+            const originalText = btn.textContent;
+            btn.textContent = '✅ 已复制到剪贴板！';
+            btn.style.borderColor = 'var(--success)';
+            btn.style.color = 'var(--success)';
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.style.borderColor = 'var(--accent)';
+                btn.style.color = 'var(--accent)';
+            }, 2000);
+        }).catch(err => {
+            alert('复制失败，请手动长按复制');
+        });
+        }
+</script>
+
+</body>
+</html>

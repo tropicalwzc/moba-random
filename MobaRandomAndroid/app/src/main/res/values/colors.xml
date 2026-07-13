@@ -1,0 +1,11 @@
+<resources>
+    <color name="primary">#0A84FF</color>
+    <color name="on_primary">#FFFFFF</color>
+    <color name="surface">#FFFDF8</color>
+    <color name="team_a">#0A84FF</color>
+    <color name="team_a_container">#E9F3FF</color>
+    <color name="team_b">#E87300</color>
+    <color name="team_b_container">#FFF0E3</color>
+    <color name="success">#138A4A</color>
+    <color name="icon_background">#0A84FF</color>
+</resources>

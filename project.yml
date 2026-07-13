@@ -1,0 +1,50 @@
+name: MobaRandom
+options:
+  bundleIdPrefix: com.example
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+schemes:
+  MobaRandom:
+    build:
+      targets:
+        MobaRandom: all
+        MobaRandomTests: [test]
+    test:
+      targets:
+        - MobaRandomTests
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+targets:
+  MobaRandom:
+    type: application
+    platform: iOS
+    sources:
+      - path: MobaRandom
+        excludes:
+          - Config/Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.MobaRandom
+        PRODUCT_NAME: MobaRandom
+        PRODUCT_MODULE_NAME: MobaRandom
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: false
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        GENERATE_INFOPLIST_FILE: false
+        INFOPLIST_FILE: MobaRandom/Config/Info.plist
+  MobaRandomTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: MobaRandomTests
+    dependencies:
+      - target: MobaRandom
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.MobaRandomTests
+        GENERATE_INFOPLIST_FILE: true
