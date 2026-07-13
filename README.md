@@ -21,3 +21,4 @@
 - 与网页版一致的复制结果文本格式
 # moba-random
 # moba-random
+# moba-random
