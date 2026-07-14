@@ -54,5 +54,45 @@ class GroupingEngineTest {
         assertEquals(listOf("温迪"), result.rolesB)
         assertEquals(setOf(1, 2), (result.playersA + result.playersB).toSet())
     }
-}
 
+    @Test
+    fun replacementCandidatesStayInCategoryAndExcludeCurrentRole() {
+        val pool = "射手：A、B、C、D\n打野：E、F"
+        val result = GroupingEngine.generate(pool, "", true, seed = 10)
+        val current = result.role(ResultTeam.A, 0)!!
+
+        val candidates = GroupingEngine.replacementCandidates(
+            result, ResultTeam.A, 0, pool, allowDuplicate = true
+        )
+
+        assertEquals(setOf("A", "B", "C", "D") - current, candidates.toSet())
+    }
+
+    @Test
+    fun replacementCandidatesPreserveNonMirrorUniqueness() {
+        val pool = "射手：A、B、C、D"
+        val result = GroupingEngine.generate(pool, "", false, seed = 10)
+        val candidates = GroupingEngine.replacementCandidates(
+            result, ResultTeam.A, 0, pool, allowDuplicate = false
+        )
+
+        assertEquals(2, candidates.size)
+        assert(!candidates.contains(result.role(ResultTeam.A, 0)))
+        assert(!candidates.contains(result.role(ResultTeam.B, 0)))
+    }
+
+    @Test
+    fun replacingRoleOnlyChangesRequestedSlot() {
+        val original = GroupingEngine.generate(
+            "射手：A、B、C\n打野：D、E、F", "", false, seed = 10
+        )
+
+        val updated = original.replacingRole(ResultTeam.B, 1, "F")!!
+
+        assertEquals(original.rolesA, updated.rolesA)
+        assertEquals(original.rolesB[0], updated.rolesB[0])
+        assertEquals("F", updated.rolesB[1])
+        assertEquals(original.playersA, updated.playersA)
+        assertEquals(original.playersB, updated.playersB)
+    }
+}

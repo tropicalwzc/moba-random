@@ -5,12 +5,48 @@ struct RoleCategory: Equatable, Sendable {
     let roles: [String]
 }
 
-struct GroupingResult: Equatable, Sendable {
+enum ResultTeam: String, Codable, Sendable {
+    case a
+    case b
+}
+
+struct RoleSlot: Hashable, Codable, Sendable {
+    let team: ResultTeam
+    let index: Int
+}
+
+struct GroupingResult: Codable, Equatable, Sendable {
     let seed: Int64
     let playersA: [Int]
     let playersB: [Int]
     let rolesA: [String]
     let rolesB: [String]
+
+    func role(team: ResultTeam, index: Int) -> String? {
+        let roles = team == .a ? rolesA : rolesB
+        guard roles.indices.contains(index) else { return nil }
+        return roles[index]
+    }
+
+    func replacingRole(team: ResultTeam, index: Int, with role: String) -> GroupingResult? {
+        guard self.role(team: team, index: index) != nil else { return nil }
+        var updatedRolesA = rolesA
+        var updatedRolesB = rolesB
+
+        if team == .a {
+            updatedRolesA[index] = role
+        } else {
+            updatedRolesB[index] = role
+        }
+
+        return GroupingResult(
+            seed: seed,
+            playersA: playersA,
+            playersB: playersB,
+            rolesA: updatedRolesA,
+            rolesB: updatedRolesB
+        )
+    }
 
     var formattedText: String {
         """
@@ -22,6 +58,25 @@ struct GroupingResult: Equatable, Sendable {
         \(playersB.map(String.init).joined(separator: "，"))
         \(rolesB.joined(separator: "，"))
         """
+    }
+}
+
+struct GameHistoryEntry: Codable, Equatable, Identifiable, Sendable {
+    let id: UUID
+    let createdAt: Date
+    var result: GroupingResult
+    var swappedSlots: Set<RoleSlot>
+
+    init(
+        id: UUID = UUID(),
+        createdAt: Date = Date(),
+        result: GroupingResult,
+        swappedSlots: Set<RoleSlot> = []
+    ) {
+        self.id = id
+        self.createdAt = createdAt
+        self.result = result
+        self.swappedSlots = swappedSlots
     }
 }
 
@@ -40,6 +95,7 @@ enum GroupingError: LocalizedError, Equatable, Sendable {
 }
 
 enum GroupingEngine {
+    static let historyLimit = 100
     static let defaultPoolText = """
     射手：温迪、甘雨、宵宫、提纳里、公子
     打野：绫华、胡桃、雷神、刻晴、牢大
@@ -139,6 +195,33 @@ enum GroupingEngine {
         )
     }
 
+    static func replacementCandidates(
+        for result: GroupingResult,
+        team: ResultTeam,
+        index: Int,
+        poolText: String,
+        allowDuplicate: Bool
+    ) -> [String] {
+        let categories = parseRolePool(poolText)
+        guard categories.indices.contains(index),
+              let currentRole = result.role(team: team, index: index) else {
+            return []
+        }
+
+        let opposingTeam: ResultTeam = team == .a ? .b : .a
+        let opposingRole = allowDuplicate ? nil : result.role(team: opposingTeam, index: index)
+        var seen = Set<String>()
+
+        return categories[index].roles.filter { role in
+            guard role != currentRole, role != opposingRole else { return false }
+            return seen.insert(role).inserted
+        }
+    }
+
+    static func limitedHistory(_ entries: [GameHistoryEntry]) -> [GameHistoryEntry] {
+        Array(entries.prefix(historyLimit))
+    }
+
     private static func pickOne(
         from roles: [String],
         previousRoles: Set<String>,
@@ -197,4 +280,3 @@ private struct Mulberry32 {
         return Double(value) / 4_294_967_296
     }
 }
-

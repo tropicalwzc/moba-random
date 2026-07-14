@@ -23,6 +23,15 @@
     <string name="roles_format">角色　%1$s</string>
     <string name="copy_result">复制分组结果</string>
     <string name="copied">已复制到剪贴板</string>
+    <string name="copy_short">复制</string>
+    <string name="copied_short">已复制</string>
+    <string name="swap_hint">💡  点按任意角色，可在同一分路的其他角色中随机更换。紫色角色表示本局已更换。</string>
+    <string name="swap_unavailable">这个分路没有其他可用角色。请在角色池中补充角色，或开启镜像模式。</string>
+    <string name="history_heading">🕘  历史记录（%1$d/100）</string>
+    <string name="clear_history">清空</string>
+    <string name="clear_history_title">清空全部历史记录？</string>
+    <string name="clear_history_message">最多保存的 100 局记录将被永久删除。</string>
+    <string name="clear_history_confirm">清空历史</string>
     <string name="reset_title">恢复默认角色池？</string>
     <string name="reset_message">当前的自定义设置将会丢失。</string>
     <string name="cancel">取消</string>

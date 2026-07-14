@@ -59,4 +59,86 @@ final class GroupingEngineTests: XCTestCase {
         XCTAssertEqual(result.rolesB, ["温迪"])
         XCTAssertEqual(Set(result.playersA + result.playersB), [1, 2])
     }
+
+    func testReplacementCandidatesStayInSameCategoryAndExcludeCurrentRole() throws {
+        let result = try GroupingEngine.generate(
+            poolText: "射手：A、B、C、D\n打野：E、F",
+            lastGameText: "",
+            allowDuplicate: true,
+            seed: 10
+        )
+        let currentRole = try XCTUnwrap(result.role(team: .a, index: 0))
+
+        let candidates = GroupingEngine.replacementCandidates(
+            for: result,
+            team: .a,
+            index: 0,
+            poolText: "射手：A、B、C、D\n打野：E、F",
+            allowDuplicate: true
+        )
+
+        XCTAssertEqual(Set(candidates), Set(["A", "B", "C", "D"]).subtracting([currentRole]))
+    }
+
+    func testReplacementCandidatesPreserveNonMirrorUniqueness() throws {
+        let pool = "射手：A、B、C、D"
+        let result = try GroupingEngine.generate(
+            poolText: pool,
+            lastGameText: "",
+            allowDuplicate: false,
+            seed: 10
+        )
+        let currentRole = try XCTUnwrap(result.role(team: .a, index: 0))
+        let opposingRole = try XCTUnwrap(result.role(team: .b, index: 0))
+
+        let candidates = GroupingEngine.replacementCandidates(
+            for: result,
+            team: .a,
+            index: 0,
+            poolText: pool,
+            allowDuplicate: false
+        )
+
+        XCTAssertFalse(candidates.contains(currentRole))
+        XCTAssertFalse(candidates.contains(opposingRole))
+        XCTAssertEqual(candidates.count, 2)
+    }
+
+    func testReplacingRoleOnlyChangesRequestedSlot() throws {
+        let original = try GroupingEngine.generate(
+            poolText: "射手：A、B、C\n打野：D、E、F",
+            lastGameText: "",
+            allowDuplicate: false,
+            seed: 10
+        )
+
+        let updated = try XCTUnwrap(original.replacingRole(team: .b, index: 1, with: "F"))
+
+        XCTAssertEqual(updated.rolesA, original.rolesA)
+        XCTAssertEqual(updated.rolesB[0], original.rolesB[0])
+        XCTAssertEqual(updated.rolesB[1], "F")
+        XCTAssertEqual(updated.playersA, original.playersA)
+        XCTAssertEqual(updated.playersB, original.playersB)
+    }
+
+    func testHistoryIsLimitedToNewestOneHundredEntries() throws {
+        let result = try GroupingEngine.generate(
+            poolText: "射手：A、B",
+            lastGameText: "",
+            allowDuplicate: false,
+            seed: 10
+        )
+        let entries = (0..<105).map { index in
+            GameHistoryEntry(
+                createdAt: Date(timeIntervalSince1970: TimeInterval(index)),
+                result: result
+            )
+        }
+
+        let limited = GroupingEngine.limitedHistory(entries)
+
+        XCTAssertEqual(limited.count, 100)
+        XCTAssertEqual(limited.first?.createdAt, entries.first?.createdAt)
+        XCTAssertEqual(limited.last?.createdAt, entries[99].createdAt)
+    }
 }

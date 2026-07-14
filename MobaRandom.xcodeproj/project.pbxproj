@@ -239,6 +239,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 39R699SCD9;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MobaRandom/Config/Info.plist;
@@ -246,6 +247,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.tropicalfish.mobarandom;
 				PRODUCT_MODULE_NAME = MobaRandom;
 				PRODUCT_NAME = MobaRandom;
@@ -401,6 +403,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = 39R699SCD9;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MobaRandom/Config/Info.plist;
@@ -408,6 +411,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.tropicalfish.mobarandom;
 				PRODUCT_MODULE_NAME = MobaRandom;
 				PRODUCT_NAME = MobaRandom;

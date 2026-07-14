@@ -2,6 +2,10 @@ package com.example.mobarandom
 
 data class RoleCategory(val name: String, val roles: List<String>)
 
+enum class ResultTeam { A, B }
+
+data class RoleSlot(val team: ResultTeam, val index: Int)
+
 data class GroupingResult(
     val seed: Long,
     val playersA: List<Int>,
@@ -9,6 +13,17 @@ data class GroupingResult(
     val rolesA: List<String>,
     val rolesB: List<String>,
 ) {
+    fun role(team: ResultTeam, index: Int): String? =
+        (if (team == ResultTeam.A) rolesA else rolesB).getOrNull(index)
+
+    fun replacingRole(team: ResultTeam, index: Int, role: String): GroupingResult? {
+        if (this.role(team, index) == null) return null
+        val updatedRolesA = rolesA.toMutableList()
+        val updatedRolesB = rolesB.toMutableList()
+        if (team == ResultTeam.A) updatedRolesA[index] = role else updatedRolesB[index] = role
+        return copy(rolesA = updatedRolesA, rolesB = updatedRolesB)
+    }
+
     val formattedText: String
         get() = """
             Group A
@@ -32,6 +47,7 @@ sealed class GroupingException(message: String) : IllegalArgumentException(messa
 }
 
 object GroupingEngine {
+    const val HISTORY_LIMIT = 100
     const val DEFAULT_POOL_TEXT = """射手：温迪、甘雨、宵宫、提纳里、公子
 打野：绫华、胡桃、雷神、刻晴、牢大
 中路：希格雯、钟离、八重、龙王、少女、夜兰、纳西妲
@@ -117,6 +133,22 @@ object GroupingEngine {
         )
     }
 
+    fun replacementCandidates(
+        result: GroupingResult,
+        team: ResultTeam,
+        index: Int,
+        poolText: String,
+        allowDuplicate: Boolean,
+    ): List<String> {
+        val categories = parseRolePool(poolText)
+        val category = categories.getOrNull(index) ?: return emptyList()
+        val currentRole = result.role(team, index) ?: return emptyList()
+        val opposingTeam = if (team == ResultTeam.A) ResultTeam.B else ResultTeam.A
+        val opposingRole = if (allowDuplicate) null else result.role(opposingTeam, index)
+
+        return category.roles.distinct().filter { it != currentRole && it != opposingRole }
+    }
+
     private fun pickOne(
         roles: List<String>,
         previousRoles: Set<String>,
@@ -164,4 +196,3 @@ private class Mulberry32(private var state: UInt) {
         return value.toDouble() / 4_294_967_296.0
     }
 }
-

@@ -7,5 +7,6 @@
     <color name="team_b">#E87300</color>
     <color name="team_b_container">#FFF0E3</color>
     <color name="success">#138A4A</color>
+    <color name="swapped">#7E3FF2</color>
     <color name="icon_background">#0A84FF</color>
 </resources>

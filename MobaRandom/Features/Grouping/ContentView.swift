@@ -7,8 +7,12 @@ struct ContentView: View {
     @State private var lastGameText = ""
     @State private var allowDuplicate = false
     @State private var result: GroupingResult?
+    @State private var swappedSlots: Set<RoleSlot> = []
+    @State private var history: [GameHistoryEntry] = []
+    @State private var currentHistoryID: UUID?
     @State private var presentedError: PresentedError?
     @State private var isShowingResetConfirmation = false
+    @State private var isShowingClearHistoryConfirmation = false
     @State private var copied = false
     @State private var hasGeneratedInitialResult = false
 
@@ -26,6 +30,10 @@ struct ContentView: View {
                                 .id("result")
                                 .transition(.move(edge: .bottom).combined(with: .opacity))
                         }
+
+                        if !history.isEmpty {
+                            historySection
+                        }
                     }
                     .frame(maxWidth: 760)
                     .padding(.horizontal)
@@ -40,7 +48,8 @@ struct ContentView: View {
                     if rolePoolText.isEmpty {
                         rolePoolText = GroupingEngine.defaultPoolText
                     }
-                    generate()
+                    loadHistory()
+                    generate(recordInHistory: false)
                 }
                 .onChange(of: result) {
                     guard result != nil else { return }
@@ -65,9 +74,23 @@ struct ContentView: View {
         } message: {
             Text("当前的自定义设置将会丢失。")
         }
+        .confirmationDialog(
+            "清空全部历史记录？",
+            isPresented: $isShowingClearHistoryConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("清空历史", role: .destructive) {
+                history = []
+                currentHistoryID = nil
+                persistHistory()
+            }
+            Button("取消", role: .cancel) {}
+        } message: {
+            Text("最多保存的 100 局记录将被永久删除。")
+        }
         .alert(item: $presentedError) { error in
             Alert(
-                title: Text("无法生成分组"),
+                title: Text(error.title),
                 message: Text(error.message),
                 dismissButton: .default(Text("好"))
             )
@@ -176,10 +199,70 @@ struct ContentView: View {
 
             HintText("填入上一局角色后，本次抽中它们的权重会降至其他角色的 1/10。")
 
+            if result == nil {
+                Button {
+                    generate()
+                } label: {
+                    Label("开始随机分组", systemImage: "dice.fill")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 5)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+            }
+        }
+    }
+
+    private func resultSection(_ result: GroupingResult) -> some View {
+        AppSection {
+            HStack {
+                Label("分组结果", systemImage: "checkmark.seal.fill")
+                    .font(.headline)
+                    .foregroundStyle(.green)
+                Spacer()
+                Button {
+                    copyResult(result)
+                } label: {
+                    Label(copied ? "已复制" : "复制", systemImage: copied ? "checkmark" : "doc.on.doc")
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .foregroundStyle(copied ? .green : .blue)
+            }
+
+            Text("种子：\(result.seed)")
+                .font(.caption.monospacedDigit())
+                .foregroundStyle(.secondary)
+                .textSelection(.enabled)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+
+            TeamResultView(
+                title: "Group A",
+                color: .blue,
+                players: result.playersA,
+                roles: result.rolesA,
+                team: .a,
+                swappedSlots: swappedSlots,
+                onRoleTapped: swapRole
+            )
+
+            TeamResultView(
+                title: "Group B",
+                color: .orange,
+                players: result.playersB,
+                roles: result.rolesB,
+                team: .b,
+                swappedSlots: swappedSlots,
+                onRoleTapped: swapRole
+            )
+
+            HintText("点按任意角色，可在同一分路的其他角色中随机更换。紫色角色表示本局已更换。")
+
             Button {
                 generate()
             } label: {
-                Label("开始随机分组", systemImage: "dice.fill")
+                Label("再次随机分组", systemImage: "dice.fill")
                     .font(.headline)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 5)
@@ -189,52 +272,30 @@ struct ContentView: View {
         }
     }
 
-    private func resultSection(_ result: GroupingResult) -> some View {
+    private var historySection: some View {
         AppSection {
-            HStack(alignment: .firstTextBaseline) {
-                Label("分组结果", systemImage: "checkmark.seal.fill")
+            HStack {
+                Label("历史记录", systemImage: "clock.arrow.circlepath")
                     .font(.headline)
-                    .foregroundStyle(.green)
                 Spacer()
-                Text("种子：\(result.seed)")
+                Text("\(history.count)/\(GroupingEngine.historyLimit)")
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
-                    .textSelection(.enabled)
-            }
-
-            TeamResultView(
-                title: "Group A",
-                color: .blue,
-                players: result.playersA,
-                roles: result.rolesA
-            )
-
-            TeamResultView(
-                title: "Group B",
-                color: .orange,
-                players: result.playersB,
-                roles: result.rolesB
-            )
-
-            Button {
-                UIPasteboard.general.string = result.formattedText
-                copied = true
-                UINotificationFeedbackGenerator().notificationOccurred(.success)
-                Task { @MainActor in
-                    try? await Task.sleep(for: .seconds(2))
-                    copied = false
+                Button("清空", role: .destructive) {
+                    isShowingClearHistoryConfirmation = true
                 }
-            } label: {
-                Label(copied ? "已复制到剪贴板" : "复制分组结果", systemImage: copied ? "checkmark" : "doc.on.doc")
-                    .frame(maxWidth: .infinity)
+                .font(.subheadline)
             }
-            .buttonStyle(.bordered)
-            .controlSize(.large)
-            .foregroundStyle(copied ? .green : .blue)
+
+            LazyVStack(spacing: 10) {
+                ForEach(history) { entry in
+                    HistoryRow(entry: entry)
+                }
+            }
         }
     }
 
-    private func generate() {
+    private func generate(recordInHistory: Bool = true) {
         do {
             let newResult = try GroupingEngine.generate(
                 poolText: rolePoolText,
@@ -243,14 +304,95 @@ struct ContentView: View {
             )
             withAnimation(.easeOut(duration: 0.25)) {
                 result = newResult
+                swappedSlots = []
+            }
+            currentHistoryID = nil
+            if recordInHistory {
+                record(result: newResult, swappedSlots: [])
             }
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
         } catch {
             let message = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
-            presentedError = PresentedError(message: message)
+            presentedError = PresentedError(title: "无法生成分组", message: message)
             UINotificationFeedbackGenerator().notificationOccurred(.error)
         }
     }
+
+    private func swapRole(team: ResultTeam, index: Int) {
+        guard let currentResult = result else { return }
+        let candidates = GroupingEngine.replacementCandidates(
+            for: currentResult,
+            team: team,
+            index: index,
+            poolText: rolePoolText,
+            allowDuplicate: allowDuplicate
+        )
+
+        guard let replacement = candidates.randomElement(),
+              let updatedResult = currentResult.replacingRole(team: team, index: index, with: replacement) else {
+            presentedError = PresentedError(
+                title: "无法更换角色",
+                message: "这个分路没有其他可用角色。请在角色池中补充角色，或开启镜像模式。"
+            )
+            UINotificationFeedbackGenerator().notificationOccurred(.warning)
+            return
+        }
+
+        let slot = RoleSlot(team: team, index: index)
+        var updatedSlots = swappedSlots
+        updatedSlots.insert(slot)
+        withAnimation(.snappy(duration: 0.25)) {
+            result = updatedResult
+            swappedSlots = updatedSlots
+        }
+        updateHistory(with: updatedResult, swappedSlots: updatedSlots)
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
+    private func copyResult(_ result: GroupingResult) {
+        UIPasteboard.general.string = result.formattedText
+        copied = true
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(2))
+            copied = false
+        }
+    }
+
+    private func record(result: GroupingResult, swappedSlots: Set<RoleSlot>) {
+        let entry = GameHistoryEntry(result: result, swappedSlots: swappedSlots)
+        history.insert(entry, at: 0)
+        history = GroupingEngine.limitedHistory(history)
+        currentHistoryID = entry.id
+        persistHistory()
+    }
+
+    private func updateHistory(with result: GroupingResult, swappedSlots: Set<RoleSlot>) {
+        if let currentHistoryID,
+           let index = history.firstIndex(where: { $0.id == currentHistoryID }) {
+            history[index].result = result
+            history[index].swappedSlots = swappedSlots
+        } else {
+            record(result: result, swappedSlots: swappedSlots)
+            return
+        }
+        persistHistory()
+    }
+
+    private func loadHistory() {
+        guard let data = UserDefaults.standard.data(forKey: Self.historyKey),
+              let savedHistory = try? JSONDecoder().decode([GameHistoryEntry].self, from: data) else {
+            return
+        }
+        history = GroupingEngine.limitedHistory(savedHistory)
+    }
+
+    private func persistHistory() {
+        guard let data = try? JSONEncoder().encode(history) else { return }
+        UserDefaults.standard.set(data, forKey: Self.historyKey)
+    }
+
+    private static let historyKey = "moba_game_history_v1"
 }
 
 private struct AppSection<Content: View>: View {
@@ -287,29 +429,79 @@ private struct TeamResultView: View {
     let color: Color
     let players: [Int]
     let roles: [String]
+    let team: ResultTeam
+    let swappedSlots: Set<RoleSlot>
+    let onRoleTapped: (ResultTeam, Int) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 14) {
             Text(title)
                 .font(.title3.bold())
                 .foregroundStyle(color)
 
-            LabeledContent("玩家") {
-                Text(players.map(String.init).joined(separator: "，"))
-                    .font(.body.monospacedDigit())
-                    .multilineTextAlignment(.trailing)
-                    .textSelection(.enabled)
+            ScrollView(.horizontal) {
+                HStack(spacing: 10) {
+                    ForEach(players, id: \.self) { player in
+                        Text("\(player)")
+                            .font(.title3.bold().monospacedDigit())
+                            .foregroundStyle(color)
+                            .frame(minWidth: 42, minHeight: 42)
+                            .background(color.opacity(0.13), in: Circle())
+                            .overlay {
+                                Circle().stroke(color.opacity(0.28), lineWidth: 1)
+                            }
+                    }
+                }
+                .padding(.horizontal, 1)
             }
+            .scrollIndicators(.hidden)
+            .accessibilityLabel("玩家 \(players.map(String.init).joined(separator: "，"))")
 
-            LabeledContent("角色") {
-                Text(roles.joined(separator: "，"))
-                    .fontWeight(.medium)
-                    .multilineTextAlignment(.trailing)
-                    .textSelection(.enabled)
+            LazyVGrid(
+                columns: [
+                    GridItem(.flexible(), spacing: 10),
+                    GridItem(.flexible(), spacing: 10)
+                ],
+                spacing: 10
+            ) {
+                ForEach(Array(roles.enumerated()), id: \.offset) { index, role in
+                    let wasSwapped = swappedSlots.contains(RoleSlot(team: team, index: index))
+                    Button {
+                        onRoleTapped(team, index)
+                    } label: {
+                        HStack(spacing: 6) {
+                            if wasSwapped {
+                                Image(systemName: "arrow.triangle.2.circlepath")
+                                    .font(.caption2.bold())
+                            }
+                            Text(role)
+                                .font(.subheadline.weight(.semibold))
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.75)
+                        }
+                        .foregroundStyle(wasSwapped ? .white : color)
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .padding(.horizontal, 10)
+                        .background(
+                            wasSwapped ? Color.purple : color.opacity(0.12),
+                            in: RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        )
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .stroke(
+                                    wasSwapped ? Color.purple : color.opacity(0.35),
+                                    lineWidth: 1
+                                )
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("\(title) \(role)")
+                    .accessibilityHint("点按后随机更换为同一分路的其他角色")
+                }
             }
         }
-        .padding(14)
-        .background(color.opacity(0.08), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .padding(16)
+        .background(color.opacity(0.08), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(alignment: .leading) {
             RoundedRectangle(cornerRadius: 2)
                 .fill(color)
@@ -319,8 +511,72 @@ private struct TeamResultView: View {
     }
 }
 
+private struct HistoryRow: View {
+    let entry: GameHistoryEntry
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(entry.createdAt, format: .dateTime.month().day().hour().minute())
+                    .font(.subheadline.weight(.semibold))
+                Spacer()
+                Text("种子 \(entry.result.seed)")
+                    .font(.caption2.monospacedDigit())
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+            }
+
+            historyTeam(
+                name: "A",
+                players: entry.result.playersA,
+                roles: entry.result.rolesA,
+                team: .a,
+                color: .blue
+            )
+            historyTeam(
+                name: "B",
+                players: entry.result.playersB,
+                roles: entry.result.rolesB,
+                team: .b,
+                color: .orange
+            )
+        }
+        .padding(12)
+        .background(Color(uiColor: .tertiarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    private func historyTeam(
+        name: String,
+        players: [Int],
+        roles: [String],
+        team: ResultTeam,
+        color: Color
+    ) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Text(name)
+                .font(.caption.bold())
+                .foregroundStyle(color)
+                .frame(width: 14)
+            Text(players.map(String.init).joined(separator: "，"))
+                .font(.caption.monospacedDigit())
+                .foregroundStyle(.secondary)
+            Text(roles.enumerated().map { index, role in
+                entry.swappedSlots.contains(RoleSlot(team: team, index: index)) ? "↻\(role)" : role
+            }.joined(separator: "，"))
+                .font(.caption.weight(.medium))
+                .foregroundStyle(
+                    entry.swappedSlots.contains(where: { $0.team == team }) ? Color.purple : Color.primary
+                )
+                .lineLimit(2)
+            Spacer(minLength: 0)
+        }
+    }
+}
+
 private struct PresentedError: Identifiable {
     let id = UUID()
+    let title: String
     let message: String
 }
 
