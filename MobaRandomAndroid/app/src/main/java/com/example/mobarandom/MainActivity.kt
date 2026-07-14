@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.text.TextUtils
+import android.util.TypedValue
 import android.view.HapticFeedbackConstants
 import android.view.Gravity
 import android.view.View
@@ -17,6 +18,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
+import androidx.core.widget.TextViewCompat
 import androidx.core.widget.NestedScrollView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
@@ -202,6 +204,13 @@ class MainActivity : AppCompatActivity() {
                 maxLines = 1
                 ellipsize = TextUtils.TruncateAt.END
                 minHeight = dp(48)
+                TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+                    this,
+                    12,
+                    18,
+                    1,
+                    TypedValue.COMPLEX_UNIT_SP,
+                )
                 chipBackgroundColor = ColorStateList.valueOf(
                     ContextCompat.getColor(
                         this@MainActivity,

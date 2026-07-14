@@ -475,12 +475,13 @@ private struct TeamResultView: View {
                                     .font(.caption2.bold())
                             }
                             Text(role)
-                                .font(.subheadline.weight(.semibold))
+                                .font(.system(size: 19, weight: .semibold))
                                 .lineLimit(1)
-                                .minimumScaleFactor(0.75)
+                                .minimumScaleFactor(0.65)
+                                .allowsTightening(true)
                         }
                         .foregroundStyle(wasSwapped ? .white : color)
-                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .frame(maxWidth: .infinity, minHeight: 48)
                         .padding(.horizontal, 10)
                         .background(
                             wasSwapped ? Color.purple : color.opacity(0.12),
