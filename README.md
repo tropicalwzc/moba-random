@@ -2,13 +2,11 @@
 
 这是 `moba-random.html` 的原生 SwiftUI 版本，支持 iPhone 和 iPad，最低系统版本为 iOS/iPadOS 18.0。
 
-## 运行
+## iOS
+[App store链接](https://apps.apple.com/cn/app/%E9%9A%8F%E6%9C%BA%E6%88%BF%E5%88%86%E7%BB%84%E5%8A%A9%E6%89%8B/id6790402359)
 
-1. 用 Xcode 打开 `MobaRandom.xcodeproj`。
-2. 在项目的 Signing & Capabilities 中选择你的开发团队。
-3. 选择 iPhone 或 iPad 模拟器后运行。
-
-如修改了 `project.yml`，可在项目根目录执行 `xcodegen generate` 重新生成 Xcode 工程。
+## Android
+[百度网盘链接](https://pan.baidu.com/s/1IQLXuHYsIjNuMb8pMzM14w?pwd=sd8n)
 
 ## 保留的逻辑
 
@@ -21,6 +19,3 @@
 - 点按结果中的角色可在同一分路随机更换，并高亮标记已更换角色
 - 自动保存最近 100 局历史记录；同一局内的角色更换会同步更新记录
 - 与网页版一致的复制结果文本格式
-# moba-random
-# moba-random
-# moba-random
