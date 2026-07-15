@@ -1,16 +1,14 @@
-# MOBA 分组助手（SwiftUI）
-
-这是 `moba-random.html` 的原生 SwiftUI 版本，支持 iPhone 和 iPad，最低系统版本为 iOS/iPadOS 18.0。
+# MOBA 分组助手
 
 ## iOS
-[App store链接](https://apps.apple.com/cn/app/%E9%9A%8F%E6%9C%BA%E6%88%BF%E5%88%86%E7%BB%84%E5%8A%A9%E6%89%8B/id6790402359)
+[App Store链接](https://apps.apple.com/cn/app/%E9%9A%8F%E6%9C%BA%E6%88%BF%E5%88%86%E7%BB%84%E5%8A%A9%E6%89%8B/id6790402359)
 
 ## Android
-[Github下载](https://github.com/tropicalwzc/moba-random/releases/download/1.0/moba-random_1.01.apk)
+1. [Github下载](https://github.com/tropicalwzc/moba-random/releases/download/1.0/moba-random_1.01.apk)
+或者
+2. [百度网盘链接](https://pan.baidu.com/s/1IQLXuHYsIjNuMb8pMzM14w?pwd=sd8n)
 
-[百度网盘链接](https://pan.baidu.com/s/1IQLXuHYsIjNuMb8pMzM14w?pwd=sd8n)
-
-## 保留的逻辑
+## 功能介绍
 
 - 自定义角色池解析与本地持久化
 - 毫秒时间戳种子和 Mulberry32 随机算法
