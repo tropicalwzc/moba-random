@@ -8,6 +8,9 @@
 或者
 2. [百度网盘链接](https://pan.baidu.com/s/1IQLXuHYsIjNuMb8pMzM14w?pwd=sd8n)
 
+## Windows
+[下载html在浏览器运行](https://github.com/tropicalwzc/moba-random/blob/main/moba-random.html)
+
 ## 功能介绍
 
 - 自定义角色池解析与本地持久化
