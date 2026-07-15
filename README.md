@@ -6,6 +6,8 @@
 [App store链接](https://apps.apple.com/cn/app/%E9%9A%8F%E6%9C%BA%E6%88%BF%E5%88%86%E7%BB%84%E5%8A%A9%E6%89%8B/id6790402359)
 
 ## Android
+[Github下载](https://github.com/tropicalwzc/moba-random/releases/download/1.0/moba-random_1.01.apk)
+
 [百度网盘链接](https://pan.baidu.com/s/1IQLXuHYsIjNuMb8pMzM14w?pwd=sd8n)
 
 ## 保留的逻辑
