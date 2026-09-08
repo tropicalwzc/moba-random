@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "defaults": {
+    "pool": "射手：A、B\n中路：A、C",
+    "lanes": ["射手", "中路"],
+    "characters": ["A", "B", "C"],
+    "weights": {
+      "A": { "射手": 100, "中路": 0 },
+      "B": { "射手": 100, "中路": 0 },
+      "C": { "射手": 0, "中路": 100 }
+    }
+  },
+  "normalization": [
+    { "input": [90, 20, 0, 0], "output": [82, 18, 0, 0] },
+    { "input": [120, 0, 0, 0], "output": [100, 0, 0, 0] },
+    { "input": [1, 1, 1], "output": [1, 1, 1] },
+    { "input": [50, 50], "output": [50, 50] },
+    { "input": [101, 101, 101], "output": [34, 33, 33] }
+  ],
+  "reconciliation": {
+    "oldPool": "射手：A、B\n中路：C",
+    "newPool": "射手：A、D\n打野：C",
+    "saved": {
+      "A": { "射手": 80, "中路": 20 },
+      "B": { "射手": 100, "中路": 0 },
+      "C": { "射手": 0, "中路": 100 }
+    },
+    "expected": {
+      "A": { "射手": 100, "打野": 0 },
+      "C": { "射手": 0, "打野": 100 },
+      "D": { "射手": 100, "打野": 0 }
+    }
+  },
+  "positionChange": {
+    "oldPool": "射手：A、B\n中路：C",
+    "newPool": "射手：B\n中路：A、C",
+    "character": "A",
+    "sourceLane": "射手",
+    "savedWeights": { "射手": 80, "中路": 20 },
+    "expectedSourceLane": "中路",
+    "expectedWeights": { "射手": 0, "中路": 100 }
+  },
+  "clipboardTransfer": {
+    "lanes": ["射手", "中路"],
+    "characters": [
+      { "character": "角色A", "laneWeights": { "射手": 80, "中路": 20 } },
+      { "character": "角色B", "laneWeights": { "射手": 10, "中路": 90 } },
+      { "character": "角色C", "laneWeights": { "射手": 100, "中路": 0 } }
+    ],
+    "expectedPool": "射手：角色A、角色C\n中路：角色B"
+  },
+  "weightedAssignment": {
+    "pool": "射手：A、B、C\n中路：D、E、F",
+    "weights": {
+      "A": { "射手": 80, "中路": 20 },
+      "B": { "射手": 100, "中路": 0 },
+      "C": { "射手": 100, "中路": 0 },
+      "D": { "射手": 0, "中路": 100 },
+      "E": { "射手": 0, "中路": 100 },
+      "F": { "射手": 0, "中路": 100 }
+    },
+    "seed": 1700000000123,
+    "previousRoles": ["A"],
+    "effectiveA": { "射手": 0.08, "中路": 0.02 },
+    "normalModeRequiresGlobalUniqueness": true,
+    "mirrorModeRequiresPerTeamUniqueness": true
+  },
+  "fixedSeedParity": {
+    "seed": 1700000000123,
+    "previousRolesText": "温迪, 胡桃, 钟离, 行秋",
+    "rolesA": ["提纳里", "绫华", "神子", "女仆"],
+    "rolesB": ["公子", "胡桃", "纳西妲", "点刀"],
+    "playersA": [8, 2, 1, 6],
+    "playersB": [7, 4, 5, 3]
+  },
+  "impossible": {
+    "pool": "射手：A\n中路：A",
+    "weights": { "A": { "射手": 50, "中路": 50 } },
+    "normalMode": true
+  }
+}

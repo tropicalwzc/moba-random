@@ -3,6 +3,7 @@ package com.example.mobarandom
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.Intent
 import android.content.res.ColorStateList
 import android.os.Bundle
 import android.text.Editable
@@ -36,8 +37,8 @@ import java.util.UUID
 class MainActivity : AppCompatActivity() {
     private lateinit var scrollView: NestedScrollView
     private lateinit var rolePoolInput: TextInputEditText
-    private lateinit var lastGameInput: TextInputEditText
     private lateinit var allowDuplicateSwitch: MaterialSwitch
+    private lateinit var avoidPreviousSwitch: MaterialSwitch
     private lateinit var mirrorBadge: TextView
     private lateinit var resultCard: MaterialCardView
     private lateinit var seedText: TextView
@@ -56,6 +57,7 @@ class MainActivity : AppCompatActivity() {
     private var swappedSlots = mutableSetOf<RoleSlot>()
     private var history = mutableListOf<GameHistoryEntry>()
     private var currentHistoryId: String? = null
+    private var previousRolesText = ""
     private val preferences by lazy {
         getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
     }
@@ -75,8 +77,8 @@ class MainActivity : AppCompatActivity() {
     private fun bindViews() {
         scrollView = findViewById(R.id.mainScroll)
         rolePoolInput = findViewById(R.id.rolePoolInput)
-        lastGameInput = findViewById(R.id.lastGameInput)
         allowDuplicateSwitch = findViewById(R.id.allowDuplicateSwitch)
+        avoidPreviousSwitch = findViewById(R.id.avoidPreviousSwitch)
         mirrorBadge = findViewById(R.id.mirrorBadge)
         resultCard = findViewById(R.id.resultCard)
         seedText = findViewById(R.id.seedText)
@@ -129,6 +131,12 @@ class MainActivity : AppCompatActivity() {
                 .show()
         }
 
+        findViewById<MaterialButton>(R.id.weightSettingsButton).setOnClickListener {
+            startActivity(Intent(this, WeightSettingsActivity::class.java).apply {
+                putExtra(WeightSettingsActivity.EXTRA_POOL_TEXT, rolePoolInput.text?.toString().orEmpty())
+            })
+        }
+
         copyButton.setOnClickListener { copyResult() }
         findViewById<MaterialButton>(R.id.clearHistoryButton).setOnClickListener {
             MaterialAlertDialogBuilder(this)
@@ -147,12 +155,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun generateGroups(scrollToResult: Boolean, recordInHistory: Boolean) {
         try {
+            val poolText = rolePoolInput.text?.toString().orEmpty()
+            val weights = RoleWeightStorage.load(this, poolText)
+            val precedingRolesText = GroupingEngine.previousRolesText(currentResult)
             val result = GroupingEngine.generate(
-                poolText = rolePoolInput.text?.toString().orEmpty(),
-                lastGameText = lastGameInput.text?.toString().orEmpty(),
+                poolText = poolText,
+                lastGameText = if (avoidPreviousSwitch.isChecked) precedingRolesText else "",
                 allowDuplicate = allowDuplicateSwitch.isChecked,
+                weightConfiguration = weights,
             )
             currentResult = result
+            previousRolesText = precedingRolesText
             swappedSlots.clear()
             currentHistoryId = null
             if (recordInHistory) record(result, swappedSlots)
@@ -240,14 +253,17 @@ class MainActivity : AppCompatActivity() {
 
     private fun swapRole(team: ResultTeam, index: Int) {
         val result = currentResult ?: return
-        val candidates = GroupingEngine.replacementCandidates(
+        val poolText = rolePoolInput.text?.toString().orEmpty()
+        val weights = RoleWeightStorage.load(this, poolText)
+        val replacement = GroupingEngine.replacementRole(
             result = result,
             team = team,
             index = index,
-            poolText = rolePoolInput.text?.toString().orEmpty(),
+            poolText = poolText,
+            lastGameText = if (avoidPreviousSwitch.isChecked) previousRolesText else "",
             allowDuplicate = allowDuplicateSwitch.isChecked,
+            weightConfiguration = weights,
         )
-        val replacement = candidates.randomOrNull()
         val updated = replacement?.let { result.replacingRole(team, index, it) }
 
         if (updated == null) {

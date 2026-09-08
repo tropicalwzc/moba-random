@@ -101,6 +101,15 @@
                     android:text="@string/role_pool_hint_with_icon"
                     android:textAppearance="?attr/textAppearanceBodySmall"
                     android:textColor="?attr/colorOnSurfaceVariant" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/weightSettingsButton"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:minHeight="48dp"
+                    android:text="@string/weight_settings_button" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -163,34 +172,18 @@
                     android:layout_marginBottom="16dp"
                     android:background="?attr/colorOutlineVariant" />
 
-                <TextView
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/avoidPreviousSwitch"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="8dp"
-                    android:text="@string/last_game_label"
-                    android:textAppearance="?attr/textAppearanceLabelLarge"
-                    android:textColor="?attr/colorOnSurfaceVariant" />
-
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:hint="@string/last_game_placeholder">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/lastGameInput"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="top|start"
-                        android:inputType="textMultiLine|textNoSuggestions"
-                        android:minLines="2" />
-                </com.google.android.material.textfield.TextInputLayout>
+                    android:minHeight="48dp"
+                    android:text="@string/avoid_previous_result" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:text="@string/last_game_hint_with_icon"
+                    android:text="@string/avoid_previous_hint_with_icon"
                     android:textAppearance="?attr/textAppearanceBodySmall"
                     android:textColor="?attr/colorOnSurfaceVariant" />
 

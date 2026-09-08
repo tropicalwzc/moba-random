@@ -3,9 +3,11 @@ import UIKit
 
 struct ContentView: View {
     @AppStorage("moba_role_pool") private var rolePoolText = GroupingEngine.defaultPoolText
+    @AppStorage("moba_role_weights_v1") private var roleWeightJSON = ""
 
-    @State private var lastGameText = ""
     @State private var allowDuplicate = false
+    @State private var avoidsPreviousResult = false
+    @State private var previousRolesText = ""
     @State private var result: GroupingResult?
     @State private var swappedSlots: Set<RoleSlot> = []
     @State private var history: [GameHistoryEntry] = []
@@ -45,6 +47,7 @@ struct ContentView: View {
                 .onAppear {
                     guard !hasGeneratedInitialResult else { return }
                     hasGeneratedInitialResult = true
+                    applyBuiltInWeightPresetIfNeeded()
                     if rolePoolText.isEmpty {
                         rolePoolText = GroupingEngine.defaultPoolText
                     }
@@ -142,6 +145,24 @@ struct ContentView: View {
                 .accessibilityLabel("角色池")
 
             HintText("支持自定义职业名称；角色之间可用顿号、逗号或空格分隔。修改会自动保存。")
+
+            NavigationLink {
+                let scannedConfiguration = currentWeightConfiguration()
+                RoleWeightSettingsView(
+                    poolText: rolePoolText,
+                    configuration: scannedConfiguration,
+                    onSave: persistRoleWeights,
+                    onImport: { importedPoolText, importedConfiguration in
+                        rolePoolText = importedPoolText
+                        persistRoleWeights(importedConfiguration)
+                    }
+                )
+                .onAppear { persistRoleWeights(scannedConfiguration) }
+            } label: {
+                Label("设置分路权重", systemImage: "chart.bar.xaxis")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
         }
     }
 
@@ -170,34 +191,8 @@ struct ContentView: View {
 
             Divider()
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text("上一局使用过的角色（选填）")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-
-                ZStack(alignment: .topLeading) {
-                    if lastGameText.isEmpty {
-                        Text("例如：温迪，胡桃，钟离，行秋")
-                            .foregroundStyle(.tertiary)
-                            .padding(.horizontal, 13)
-                            .padding(.vertical, 16)
-                            .allowsHitTesting(false)
-                    }
-
-                    TextEditor(text: $lastGameText)
-                        .frame(minHeight: 84)
-                        .padding(8)
-                        .scrollContentBackground(.hidden)
-                        .background(Color(uiColor: .secondarySystemGroupedBackground))
-                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                        .overlay {
-                            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .stroke(Color(uiColor: .separator), lineWidth: 0.5)
-                        }
-                }
-            }
-
-            HintText("填入上一局角色后，本次抽中它们的权重会降至其他角色的 1/10。")
+            Toggle("降低上一轮角色的抽中概率", isOn: $avoidsPreviousResult)
+            HintText("开启后，应用会自动识别上一轮分组中的角色，并将它们下一轮的有效权重降至 1/10。")
 
             if result == nil {
                 Button {
@@ -297,15 +292,20 @@ struct ContentView: View {
 
     private func generate(recordInHistory: Bool = true) {
         do {
+            let weights = currentWeightConfiguration()
+            persistRoleWeights(weights)
+            let precedingRolesText = GroupingEngine.previousRolesText(from: result)
             let newResult = try GroupingEngine.generate(
                 poolText: rolePoolText,
-                lastGameText: lastGameText,
-                allowDuplicate: allowDuplicate
+                lastGameText: avoidsPreviousResult ? precedingRolesText : "",
+                allowDuplicate: allowDuplicate,
+                weightConfiguration: weights
             )
             withAnimation(.easeOut(duration: 0.25)) {
                 result = newResult
                 swappedSlots = []
             }
+            previousRolesText = precedingRolesText
             currentHistoryID = nil
             if recordInHistory {
                 record(result: newResult, swappedSlots: [])
@@ -320,19 +320,23 @@ struct ContentView: View {
 
     private func swapRole(team: ResultTeam, index: Int) {
         guard let currentResult = result else { return }
-        let candidates = GroupingEngine.replacementCandidates(
+        let weights = currentWeightConfiguration()
+        persistRoleWeights(weights)
+        let replacement = GroupingEngine.replacementRole(
             for: currentResult,
             team: team,
             index: index,
             poolText: rolePoolText,
-            allowDuplicate: allowDuplicate
+            lastGameText: avoidsPreviousResult ? previousRolesText : "",
+            allowDuplicate: allowDuplicate,
+            weightConfiguration: weights
         )
 
-        guard let replacement = candidates.randomElement(),
+        guard let replacement,
               let updatedResult = currentResult.replacingRole(team: team, index: index, with: replacement) else {
             presentedError = PresentedError(
                 title: "无法更换角色",
-                message: "这个分路没有其他可用角色。请在角色池中补充角色，或开启镜像模式。"
+                message: "这个分路没有其他权重大于 0 的可用角色。请调整分路权重、补充角色，或开启镜像模式。"
             )
             UINotificationFeedbackGenerator().notificationOccurred(.warning)
             return
@@ -392,7 +396,317 @@ struct ContentView: View {
         UserDefaults.standard.set(data, forKey: Self.historyKey)
     }
 
+    private func currentWeightConfiguration() -> RoleWeightConfiguration {
+        let saved = roleWeightJSON.data(using: .utf8).flatMap {
+            try? JSONDecoder().decode(RoleWeightConfiguration.self, from: $0)
+        }
+        let categories = GroupingEngine.parseRolePool(rolePoolText)
+        return RoleWeightConfiguration.reconciled(categories: categories, saved: saved)
+    }
+
+    private func persistRoleWeights(_ configuration: RoleWeightConfiguration) {
+        guard let data = try? JSONEncoder().encode(configuration),
+              let encoded = String(data: data, encoding: .utf8) else { return }
+        roleWeightJSON = encoded
+    }
+
+    private func applyBuiltInWeightPresetIfNeeded() {
+        let defaults = UserDefaults.standard
+        guard BuiltInWeightPresetMigration.isPending(in: defaults) else { return }
+        let currentLanes = GroupingEngine.parseRolePool(rolePoolText).map(\.name)
+        guard let imported = try? BuiltInWeightPresetMigration.load(currentLanes: currentLanes) else {
+            return
+        }
+        rolePoolText = imported.poolText
+        persistRoleWeights(imported.configuration)
+        BuiltInWeightPresetMigration.markApplied(in: defaults)
+    }
+
     private static let historyKey = "moba_game_history_v1"
+}
+
+private struct RoleWeightSettingsView: View {
+    private struct FieldID: Hashable {
+        let character: String
+        let lane: String
+    }
+
+    private struct TransferNotice: Identifiable {
+        let id = UUID()
+        let title: String
+        let message: String
+    }
+
+    @Environment(\.dismiss) private var dismiss
+    @FocusState private var focusedField: FieldID?
+
+    let onSave: (RoleWeightConfiguration) -> Void
+    let onImport: (String, RoleWeightConfiguration) -> Void
+
+    @State private var activePoolText: String
+    @State private var configuration: RoleWeightConfiguration
+    @State private var draft: [String: [String: String]]
+    @State private var isShowingDiscardConfirmation = false
+    @State private var transferNotice: TransferNotice?
+
+    private var categories: [RoleCategory] { GroupingEngine.parseRolePool(activePoolText) }
+    private var lanes: [String] { categories.map(\.name) }
+    private var characters: [String] { configuration.characters.map(\.character) }
+
+    init(
+        poolText: String,
+        configuration: RoleWeightConfiguration,
+        onSave: @escaping (RoleWeightConfiguration) -> Void,
+        onImport: @escaping (String, RoleWeightConfiguration) -> Void
+    ) {
+        self.onSave = onSave
+        self.onImport = onImport
+        _activePoolText = State(initialValue: poolText)
+        _configuration = State(initialValue: configuration)
+        _draft = State(initialValue: Self.makeDraft(
+            configuration: configuration,
+            lanes: GroupingEngine.parseRolePool(poolText).map(\.name)
+        ))
+    }
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 14) {
+                AppSection {
+                    Label("每个角色的整数权重合计必须为 100。提交后若超过 100，会按当前比例自动换算。", systemImage: "info.circle")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                LazyVGrid(
+                    columns: [GridItem(.adaptive(minimum: 320, maximum: 440), spacing: 14)],
+                    alignment: .center,
+                    spacing: 14
+                ) {
+                    ForEach(characters, id: \.self) { character in
+                        characterCard(character)
+                    }
+                }
+            }
+            .frame(maxWidth: 1_400)
+            .padding()
+            .frame(maxWidth: .infinity)
+        }
+        .background(Color(uiColor: .systemGroupedBackground))
+        .navigationTitle("分路权重")
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button("返回") { attemptDismiss() }
+            }
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                Menu {
+                    Button("导出到剪切板", systemImage: "doc.on.clipboard") { exportJSON() }
+                    Button("从剪切板导入", systemImage: "clipboard") { importJSON() }
+                } label: {
+                    Label("JSON", systemImage: "arrow.up.arrow.down")
+                }
+
+                Button("保存") { save() }
+                    .fontWeight(.semibold)
+                    .disabled(!canSave)
+            }
+        }
+        .onChange(of: focusedField) { oldValue, _ in
+            if let oldValue { commitRow(oldValue.character) }
+        }
+        .confirmationDialog(
+            "放弃未完成的权重设置？",
+            isPresented: $isShowingDiscardConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("放弃修改", role: .destructive) { dismiss() }
+            Button("继续编辑", role: .cancel) {}
+        } message: {
+            Text("存在合计不足 100 或无效的角色权重，无法保存。")
+        }
+        .alert(item: $transferNotice) { notice in
+            Alert(
+                title: Text(notice.title),
+                message: Text(notice.message),
+                dismissButton: .default(Text("好"))
+            )
+        }
+    }
+
+    private func characterCard(_ character: String) -> some View {
+        let total = rowValues(character)?.reduce(0, +)
+        return AppSection {
+            HStack {
+                Text(character)
+                    .font(.headline)
+                Spacer()
+                if let total {
+                    Text(total == 100 ? "100 / 100" : "还差 \(max(0, 100 - total))")
+                        .font(.caption.monospacedDigit().bold())
+                        .foregroundStyle(total == 100 ? .green : .orange)
+                } else {
+                    Text("请输入整数")
+                        .font(.caption.bold())
+                        .foregroundStyle(.red)
+                }
+            }
+
+            ScrollView(.horizontal) {
+                HStack(spacing: 12) {
+                    ForEach(lanes, id: \.self) { lane in
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(lane)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            TextField("0", text: binding(character: character, lane: lane))
+                                .keyboardType(.numberPad)
+                                .multilineTextAlignment(.center)
+                                .textFieldStyle(.roundedBorder)
+                                .frame(width: 76)
+                                .focused($focusedField, equals: FieldID(character: character, lane: lane))
+                                .onSubmit { commitRow(character) }
+                                .accessibilityLabel("\(character) \(lane)权重")
+                        }
+                    }
+                }
+            }
+            .scrollIndicators(.hidden)
+        }
+    }
+
+    private var canSave: Bool {
+        characters.allSatisfy { character in
+            guard let values = rowValues(character) else { return false }
+            return values.reduce(0, +) >= 100
+        }
+    }
+
+    private var hasInvalidDraft: Bool {
+        characters.contains { character in
+            guard let values = rowValues(character) else { return true }
+            return values.reduce(0, +) != 100
+        }
+    }
+
+    private func binding(character: String, lane: String) -> Binding<String> {
+        Binding(
+            get: { draft[character]?[lane] ?? "0" },
+            set: { value in
+                let digits = value.filter(\.isNumber)
+                draft[character, default: [:]][lane] = digits
+            }
+        )
+    }
+
+    private func rowValues(_ character: String) -> [Int]? {
+        var values: [Int] = []
+        for lane in lanes {
+            guard let raw = draft[character]?[lane], !raw.isEmpty, let value = Int(raw), value >= 0 else {
+                return nil
+            }
+            values.append(value)
+        }
+        return values
+    }
+
+    private func commitRow(_ character: String) {
+        guard let values = rowValues(character),
+              let normalized = RoleWeightConfiguration.normalizedToHundred(values) else { return }
+        for (index, lane) in lanes.enumerated() {
+            draft[character, default: [:]][lane] = String(normalized[index])
+        }
+    }
+
+    private func save() {
+        characters.forEach(commitRow)
+        guard let updatedConfiguration = draftConfiguration() else { return }
+        onSave(updatedConfiguration)
+        dismiss()
+    }
+
+    private func draftConfiguration() -> RoleWeightConfiguration? {
+        guard !hasInvalidDraft else { return nil }
+        let entries = characters.compactMap { character -> CharacterLaneWeights? in
+            guard let values = rowValues(character) else { return nil }
+            return CharacterLaneWeights(
+                character: character,
+                laneWeights: Dictionary(uniqueKeysWithValues: zip(lanes, values)),
+                sourceLane: configuration.characters.first(where: { $0.character == character })?.sourceLane
+            )
+        }
+        guard entries.count == characters.count else { return nil }
+        return RoleWeightConfiguration(characters: entries)
+    }
+
+    private func exportJSON() {
+        focusedField = nil
+        characters.forEach(commitRow)
+        guard let updatedConfiguration = draftConfiguration() else {
+            transferNotice = TransferNotice(
+                title: "无法导出",
+                message: "请先让每个角色的权重合计为 100。"
+            )
+            return
+        }
+        do {
+            UIPasteboard.general.string = try RoleWeightTransfer.exportJSON(
+                lanes: lanes,
+                configuration: updatedConfiguration
+            )
+            transferNotice = TransferNotice(title: "已导出", message: "权重 JSON 已复制到剪切板。")
+        } catch {
+            transferNotice = TransferNotice(title: "无法导出", message: error.localizedDescription)
+        }
+    }
+
+    private func importJSON() {
+        focusedField = nil
+        guard let json = UIPasteboard.general.string, !json.isEmpty else {
+            transferNotice = TransferNotice(title: "无法导入", message: "剪切板中没有文本。")
+            return
+        }
+        do {
+            let imported = try RoleWeightTransfer.importJSON(json, currentLanes: lanes)
+            activePoolText = imported.poolText
+            configuration = imported.configuration
+            draft = Self.makeDraft(
+                configuration: imported.configuration,
+                lanes: GroupingEngine.parseRolePool(imported.poolText).map(\.name)
+            )
+            onImport(imported.poolText, imported.configuration)
+            transferNotice = TransferNotice(
+                title: "导入成功",
+                message: "权重设置与主页角色池已按最新 JSON 更新。"
+            )
+        } catch {
+            transferNotice = TransferNotice(title: "无法导入", message: error.localizedDescription)
+        }
+    }
+
+    private func attemptDismiss() {
+        focusedField = nil
+        if hasInvalidDraft {
+            isShowingDiscardConfirmation = true
+        } else {
+            dismiss()
+        }
+    }
+
+    private static func makeDraft(
+        configuration: RoleWeightConfiguration,
+        lanes: [String]
+    ) -> [String: [String: String]] {
+        Dictionary(uniqueKeysWithValues: configuration.characters.map { entry in
+            (
+                entry.character,
+                Dictionary(uniqueKeysWithValues: lanes.map { lane in
+                    (lane, String(entry.laneWeights[lane] ?? 0))
+                })
+            )
+        })
+    }
 }
 
 private struct AppSection<Content: View>: View {

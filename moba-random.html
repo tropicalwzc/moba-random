@@ -5,517 +5,451 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MOBA 游戏分组助手 Pro</title>
     <style>
-        :root {
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --accent: #3b82f6;
-            --accent-hover: #2563eb;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --border: #334155;
-            --success: #10b981;
-            --warning: #f59e0b;
-        }
-
-        body {
-            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            max-width: 650px;
-            width: 100%;
-        }
-
-        h1 {
-            text-align: center;
-            color: var(--accent);
-            margin-bottom: 5px;
-            font-size: 1.8rem;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .subtitle {
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin-bottom: 25px;
-        }
-
-        .card {
-            background-color: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            margin-bottom: 20px;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-
-        .card-title {
-            font-weight: bold;
-            font-size: 1.1rem;
-            color: var(--text-primary);
-            margin: 0;
-        }
-
-        .btn-link {
-            background: none;
-            border: none;
-            color: var(--accent);
-            cursor: pointer;
-            font-size: 0.9rem;
-            text-decoration: underline;
-            padding: 0;
-        }
-        .btn-link:hover { color: var(--accent-hover); }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        textarea {
-            width: 100%;
-            background-color: var(--bg-color);
-            border: 1px solid var(--border);
-            color: var(--text-primary);
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            resize: vertical;
-            box-sizing: border-box;
-            transition: border-color 0.2s;
-            font-family: inherit;
-        }
-
-        textarea:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
-
-        /* 自定义 Checkbox 样式 */
-        .checkbox-wrapper {
-            display: flex;
-            align-items: center;
-            margin: 15px 0;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .checkbox-wrapper input {
-            display: none;
-        }
-
-        .checkmark {
-            width: 20px;
-            height: 20px;
-            background-color: var(--bg-color);
-            border: 2px solid var(--border);
-            border-radius: 4px;
-            margin-right: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s;
-        }
-
-        .checkbox-wrapper input:checked + .checkmark {
-            background-color: var(--accent);
-            border-color: var(--accent);
-        }
-
-        .checkmark::after {
-            content: '✓';
-            color: white;
-            font-size: 14px;
-            font-weight: bold;
-            display: none;
-        }
-
-        .checkbox-wrapper input:checked + .checkmark::after {
-            display: block;
-        }
-
-        .checkbox-label {
-            color: var(--text-primary);
-            font-size: 0.95rem;
-            font-weight: 500;
-        }
-
-        .btn {
-            width: 100%;
-            background-color: var(--accent);
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.1s;
-            margin-top: 10px;
-        }
-
-        .btn:hover { background-color: var(--accent-hover); }
-        .btn:active { transform: scale(0.98); }
-
-        .result-area {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 20px;
-            display: none;
-            animation: fadeIn 0.5s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .seed-info {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            text-align: right;
-            margin-bottom: 15px;
-            font-family: monospace;
-        }
-
-        pre {
-            background-color: var(--bg-color);
-            padding: 20px;
-            border-radius: 8px;
-            border-left: 4px solid var(--accent);
-            font-family: 'Consolas', 'Monaco', monospace;
-            font-size: 1.1rem;
-            line-height: 1.6;
-            color: var(--text-primary);
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            margin: 0;
-        }
-
-        .copy-btn {
-            background-color: transparent;
-            border: 1px solid var(--accent);
-            color: var(--accent);
-            padding: 10px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.95rem;
-            margin-top: 15px;
-            width: 100%;
-            transition: all 0.2s;
-            font-weight: bold;
-        }
-
-        .copy-btn:hover {
-            background-color: var(--accent);
-            color: white;
-        }
-
-        .hint {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            margin-top: 6px;
-            line-height: 1.4;
-        }
-        
-        .mode-badge {
-            display: inline-block;
-            background-color: var(--warning);
-            color: #000;
-            font-size: 0.75rem;
-            font-weight: bold;
-            padding: 2px 8px;
-            border-radius: 4px;
-            margin-left: 8px;
-            vertical-align: middle;
-            display: none;
-        }
+        :root { --bg:#0f172a; --card:#1e293b; --accent:#3b82f6; --accent-hover:#2563eb; --text:#f8fafc; --muted:#94a3b8; --border:#334155; --success:#10b981; --warning:#f59e0b; --danger:#ef4444; }
+        * { box-sizing:border-box; }
+        body { font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; background:var(--bg); color:var(--text); margin:0; padding:20px; min-height:100vh; }
+        .page { width:100%; max-width:760px; margin:0 auto; }
+        .hidden { display:none !important; }
+        h1 { text-align:center; color:var(--accent); margin:0 0 5px; font-size:1.8rem; letter-spacing:2px; }
+        .subtitle { text-align:center; color:var(--muted); font-size:.9rem; margin-bottom:25px; }
+        .card { background:var(--card); padding:20px; border-radius:12px; border:1px solid var(--border); margin-bottom:20px; }
+        .card-header,.weight-heading,.page-header { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+        .page-header { margin-bottom:18px; }
+        .card-title { font-weight:700; font-size:1.1rem; margin:0; }
+        label { display:block; margin-bottom:8px; color:var(--muted); font-size:.9rem; }
+        textarea,.weight-input { width:100%; background:var(--bg); border:1px solid var(--border); color:var(--text); padding:12px; border-radius:8px; font:inherit; }
+        textarea { resize:vertical; }
+        textarea:focus,.weight-input:focus { outline:none; border-color:var(--accent); }
+        .btn,.btn-secondary,.btn-link { cursor:pointer; font:inherit; }
+        .btn { width:100%; background:var(--accent); color:#fff; border:0; padding:14px; border-radius:8px; font-weight:700; margin-top:10px; }
+        .btn:hover { background:var(--accent-hover); }
+        .btn-secondary { width:100%; color:var(--accent); background:transparent; border:1px solid var(--accent); padding:11px; border-radius:8px; font-weight:700; margin-top:12px; }
+        .btn-link { color:var(--accent); background:none; border:0; padding:4px; text-decoration:underline; }
+        .hint { font-size:.8rem; color:var(--muted); margin-top:8px; line-height:1.45; }
+        .checkbox-wrapper { display:flex; align-items:center; margin:15px 0; cursor:pointer; user-select:none; color:var(--text); }
+        .checkbox-wrapper input { width:20px; height:20px; margin-right:10px; accent-color:var(--accent); }
+        .mode-badge { display:none; background:var(--warning); color:#000; font-size:.75rem; font-weight:700; padding:2px 8px; border-radius:4px; margin-left:8px; }
+        .result-area { display:none; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; margin-top:20px; }
+        .seed-info { font-size:.8rem; color:var(--muted); text-align:right; margin-bottom:15px; font-family:monospace; }
+        pre { background:var(--bg); padding:20px; border-radius:8px; border-left:4px solid var(--accent); font:1.05rem/1.6 Consolas,Monaco,monospace; white-space:pre-wrap; word-wrap:break-word; margin:0; }
+        .copy-btn { width:100%; color:var(--accent); background:transparent; border:1px solid var(--accent); padding:10px 16px; border-radius:6px; cursor:pointer; font-weight:700; margin-top:15px; }
+        .team-roles { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-top:12px; }
+        .role-chip { background:rgba(59,130,246,.12); color:#93c5fd; border:1px solid rgba(59,130,246,.45); border-radius:8px; padding:10px; cursor:pointer; font-weight:700; }
+        .weight-card { padding:16px; }
+        .weight-total { font-size:.8rem; font-weight:700; color:var(--warning); }
+        .weight-total.complete { color:var(--success); }
+        .weight-total.invalid { color:var(--danger); }
+        .weight-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(92px,1fr)); gap:10px; margin-top:12px; }
+        .weight-input { text-align:center; padding:10px; }
+        .weight-actions { position:sticky; bottom:0; padding:10px 0 4px; background:linear-gradient(transparent,var(--bg) 28%); }
+        @media (max-width:520px) { body{padding:12px}.card{padding:16px}.weight-grid{grid-template-columns:repeat(2,minmax(0,1fr))} }
     </style>
 </head>
 <body>
-
-<div class="container">
+<main id="mainPage" class="page">
     <h1>⚔️ MOBA 分组助手 Pro</h1>
-    <div class="subtitle">动态角色池 · 智能避让上一局 · 毫秒级真随机</div>
+    <div class="subtitle">动态角色池 · 分路权重 · 智能避让上一局</div>
 
-    <!-- 角色池设置 -->
-    <div class="card">
+    <section class="card">
         <div class="card-header">
-            <h3 class="card-title">📝 角色池设置</h3>
+            <h2 class="card-title">📝 角色池设置</h2>
             <button class="btn-link" onclick="resetDefaultPool()">恢复默认</button>
         </div>
         <textarea id="rolePoolInput" rows="6" placeholder="格式：职业名：角色1、角色2、角色3"></textarea>
-        <div class="hint">💡 提示：支持自定义职业名称。角色之间可用顿号(、)、逗号(,)或空格分隔。修改后会自动保存。</div>
-    </div>
+        <div class="hint">💡 支持自定义分路；角色之间可用顿号、逗号或空格分隔，修改会自动保存。</div>
+        <button class="btn-secondary" onclick="openWeightSettings()">设置分路权重</button>
+    </section>
 
-    <!-- 分组规则设置 -->
-    <div class="card">
-        <h3 class="card-title" style="margin-top: 0;">⚙️ 分组规则</h3>
-        
+    <section class="card">
+        <h2 class="card-title">⚙️ 分组规则</h2>
         <label class="checkbox-wrapper">
             <input type="checkbox" id="allowDuplicate">
-            <span class="checkmark"></span>
-            <span class="checkbox-label">允许两组使用相同角色 <span class="mode-badge" id="modeBadge">镜像模式</span></span>
+            <span>允许两组使用相同角色 <span class="mode-badge" id="modeBadge">镜像模式</span></span>
         </label>
-        <div class="hint" style="margin-bottom: 15px;">💡 开启后，A/B两组可能分配到同一角色（如双方射手都是温迪），只需保证各分路分配正确即可。</div>
-
-        <label for="lastGameInput">上一局使用过的角色 (选填)：</label>
-        <textarea id="lastGameInput" rows="2" placeholder="例如：温迪, 胡桃, 钟离, 行秋, 甘雨, 雷神, 龙王, 仆人"></textarea>
-        <div class="hint">💡 提示：填入上一局用过的角色，系统将大幅降低再次抽中它们的概率。</div>
-        
+        <div class="hint">💡 镜像模式允许同一角色分别在 A/B 队出现一次，但同一队内仍不会重复。</div>
+        <label class="checkbox-wrapper" style="margin-top:16px">
+            <input type="checkbox" id="avoidPrevious">
+            <span>降低上一轮角色的抽中概率</span>
+        </label>
+        <div class="hint">💡 开启后，应用会自动识别上一轮分组中的角色，并将它们下一轮的有效权重降至 1/10。</div>
         <button class="btn" onclick="generateGroups()">🎲 开始随机分组</button>
-    </div>
+    </section>
 
-    <!-- 结果展示 -->
-    <div class="result-area" id="resultArea">
+    <section class="result-area" id="resultArea">
         <div class="seed-info" id="seedInfo"></div>
         <pre id="outputText"></pre>
+        <div id="interactiveRoles"></div>
+        <div class="hint">点按角色可按当前分路权重随机更换。</div>
         <button class="copy-btn" onclick="copyResult()">📋 复制分组结果</button>
+    </section>
+</main>
+
+<main id="weightPage" class="page hidden">
+    <div class="page-header">
+        <button class="btn-link" onclick="closeWeightSettings()">← 返回</button>
+        <h1 style="font-size:1.35rem">分路权重</h1>
+        <span style="width:42px"></span>
     </div>
-</div>
+    <section class="card hint">每个角色只支持非负整数，合计必须为 100。提交某个输入后若总和超过 100，会按整行当前比例自动换算。</section>
+    <div id="weightRows"></div>
+    <div class="weight-actions"><button class="btn" onclick="saveWeightSettings()">保存权重</button></div>
+</main>
 
 <script>
-    // 默认角色池文本
-    const DEFAULT_POOL_TEXT = `射手：温迪、甘雨、宵宫、提纳里、公子
+    const DEFAULT_POOL_TEXT = `射手：温迪、甘雨、宵宫、提纳里、公子、夜兰
 打野：绫华、胡桃、雷神、刻晴、牢大
-中路：希格雯、钟离、八重、龙王、少女、夜兰、纳西妲
-战士：菲林斯、行秋、女仆、仆人、班尼特、丝柯克、点刀、魈`;
+中路：希格雯、钟离、神子、龙王、少女、纳西妲、可莉
+战士：菲林斯、行秋、女仆、仆人、班尼特、丝柯克、点刀、魈、迪卢克、洛恩、琴、杜林`;
+    const WEIGHT_VERSION = 1;
+    const WEIGHT_KEY = 'moba_role_weights_v1';
+    let currentResult = null;
+    let previousResultRolesText = '';
+    let weightDraft = null;
+    let weightCategories = [];
 
-    // 初始化：从 localStorage 读取或加载默认值
-    window.onload = function() {
-        const savedPool = localStorage.getItem('moba_role_pool');
-        document.getElementById('rolePoolInput').value = savedPool || DEFAULT_POOL_TEXT;
-        
-        // 监听 checkbox 变化，更新 UI 提示
-        document.getElementById('allowDuplicate').addEventListener('change', function() {
-            document.getElementById('modeBadge').style.display = this.checked ? 'inline-block' : 'none';
-        });
-
-        // 页面加载时自动执行一次分组
-        generateGroups();
-    };
-
-    function resetDefaultPool() {
-        if(confirm('确定要恢复默认角色池吗？自定义的设置将会丢失。')) {
-            document.getElementById('rolePoolInput').value = DEFAULT_POOL_TEXT;
-            localStorage.setItem('moba_role_pool', DEFAULT_POOL_TEXT);
-            generateGroups();
-        }
-    }
-
-    // 解析角色池文本
     function parseRolePool(text) {
-        const lines = text.split('\n');
-        const pool = {};
-        
-        lines.forEach(line => {
-            line = line.trim();
-            if (!line) return;
-            // 匹配 "职业名：角色列表" 或 "职业名: 角色列表"
-            const match = line.match(/^([^：:]+)[：:]\s*(.+)$/);
-            if (match) {
-                const roleName = match[1].trim();
-                const charsStr = match[2].trim();
-                // 支持中文顿号、中文逗号、英文逗号、空格作为分隔符
-                const chars = charsStr.split(/[、,，\s]+/).filter(c => c.length > 0);
-                if (chars.length > 0) {
-                    pool[roleName] = chars;
-                }
-            }
+        const categories = new Map();
+        text.split('\n').forEach(raw => {
+            const line = raw.trim();
+            const separator = [...line].findIndex(char => char === '：' || char === ':');
+            if (!line || separator < 0) return;
+            const name = [...line].slice(0, separator).join('').trim();
+            const values = [...line].slice(separator + 1).join('').trim();
+            const roles = values.split(/[、,，\s]+/).filter(Boolean);
+            if (name && roles.length) categories.set(name, { name, roles });
         });
-        return pool;
+        return [...categories.values()];
     }
 
-    // Mulberry32 伪随机数生成器 (使用毫秒时间戳作为种子)
-    function mulberry32(a) {
-        return function() {
-            var t = a += 0x6D2B79F5;
-            t = Math.imul(t ^ t >>> 15, t | 1);
-            t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-            return ((t ^ t >>> 14) >>> 0) / 4294967296;
-        }
+    function normalizeToHundred(values) {
+        if (!values.every(Number.isInteger) || values.some(value => value < 0)) return null;
+        const total = values.reduce((sum, value) => sum + value, 0);
+        if (total <= 100) return [...values];
+        const exact = values.map(value => value * 100 / total);
+        const result = exact.map(Math.floor);
+        const order = exact.map((value, index) => ({ index, remainder:value - Math.floor(value) }))
+            .sort((a,b) => b.remainder - a.remainder || a.index - b.index);
+        let remaining = 100 - result.reduce((sum, value) => sum + value, 0);
+        for (let cursor = 0; remaining > 0; cursor++, remaining--) result[order[cursor].index]++;
+        return result;
     }
 
-    // 核心：加权随机选取 1 个角色
-    function pickOneRole(pool, lastGameRoles, rng) {
-        let available = pool.map(role => ({
-            name: role,
-            // 上一局出现的角色权重降为 0.1，未出现的为 1.0 (即10倍概率选取新角色)
-            weight: lastGameRoles.includes(role) ? 0.1 : 1.0
-        }));
-        
-        let totalWeight = available.reduce((sum, item) => sum + item.weight, 0);
-        let r = rng() * totalWeight;
-        let selectedIndex = -1;
-        
-        for (let j = 0; j < available.length; j++) {
-            r -= available[j].weight;
-            if (r <= 0) {
-                selectedIndex = j;
-                break;
+    function reconcileWeights(categories, saved) {
+        const lanes = categories.map(category => category.name);
+        const laneSet = new Set(lanes);
+        const order = [];
+        const defaultLane = new Map();
+        categories.forEach(category => category.roles.forEach(character => {
+            if (!defaultLane.has(character)) {
+                defaultLane.set(character, category.name);
+                order.push(character);
             }
-        }
-        if (selectedIndex === -1) selectedIndex = available.length - 1;
-        
-        return available[selectedIndex].name;
+        }));
+        const savedEntries = saved && saved.version === WEIGHT_VERSION && Array.isArray(saved.characters)
+            ? new Map(saved.characters.map(entry => [entry.character, entry])) : new Map();
+        const characters = order.map(character => {
+            const fallback = Object.fromEntries(lanes.map(lane => [lane, lane === defaultLane.get(character) ? 100 : 0]));
+            const old = savedEntries.get(character);
+            if (!old || !old.laneWeights || Object.values(old.laneWeights).some(value => !Number.isInteger(value) || value < 0)) {
+                return { character, sourceLane:defaultLane.get(character), laneWeights:fallback };
+            }
+            if (old.sourceLane != null && old.sourceLane !== defaultLane.get(character)) {
+                return { character, sourceLane:defaultLane.get(character), laneWeights:fallback };
+            }
+            const laneWeights = Object.fromEntries(lanes.map(lane => [lane, old.laneWeights[lane] || 0]));
+            const removed = Object.entries(old.laneWeights).reduce((sum,[lane,value]) => sum + (laneSet.has(lane) ? 0 : value), 0);
+            laneWeights[defaultLane.get(character)] += removed;
+            return Object.values(laneWeights).reduce((sum,value) => sum + value, 0) === 100
+                ? { character, sourceLane:defaultLane.get(character), laneWeights }
+                : { character, sourceLane:defaultLane.get(character), laneWeights:fallback };
+        });
+        return { version:WEIGHT_VERSION, characters };
     }
 
-    // 选取 2 个不重复的角色 (用于未开启允许重复模式时)
-    function pickTwoDistinct(pool, lastGameRoles, rng) {
-        let tempPool = [...pool];
-        let role1 = pickOneRole(tempPool, lastGameRoles, rng);
-        
-        // 从临时池中移除已选角色，确保第二次抽取不重复
-        tempPool = tempPool.filter(r => r !== role1);
-        
-        if (tempPool.length === 0) {
-            return [role1, role1]; // 兜底，理论上外层已校验长度 >= 2
-        }
-        
-        let role2 = pickOneRole(tempPool, lastGameRoles, rng);
-        return [role1, role2];
+    function loadWeights(poolText) {
+        let saved = null;
+        try { saved = JSON.parse(localStorage.getItem(WEIGHT_KEY)); } catch (_) {}
+        const reconciled = reconcileWeights(parseRolePool(poolText), saved);
+        localStorage.setItem(WEIGHT_KEY, JSON.stringify(reconciled));
+        return reconciled;
     }
 
-    // Fisher-Yates 洗牌算法 (使用自定义 rng)
-    function shuffle(array, rng) {
-        let arr = [...array];
-        for (let i = arr.length - 1; i > 0; i--) {
-            let j = Math.floor(rng() * (i + 1));
-            [arr[i], arr[j]] = [arr[j], arr[i]];
+    function mulberry32(seed) {
+        let state = seed >>> 0;
+        return function() {
+            let value = state = (state + 0x6D2B79F5) >>> 0;
+            value = Math.imul(value ^ value >>> 15, value | 1);
+            value ^= value + Math.imul(value ^ value >>> 7, value | 61);
+            return ((value ^ value >>> 14) >>> 0) / 4294967296;
+        };
+    }
+
+    function previousRoleSet(text) { return new Set(text.match(/[\u4e00-\u9fa5a-zA-Z]+/g) || []); }
+
+    function previousRolesTextFromResult(result) {
+        return result ? [...result.rolesA, ...result.rolesB].join('，') : '';
+    }
+    function configuredWeight(configuration, character, lane) {
+        return configuration.characters.find(entry => entry.character === character)?.laneWeights[lane] || 0;
+    }
+    function effectiveWeight(configuration, character, lane, previousRoles) {
+        return configuredWeight(configuration, character, lane) / 100 * (previousRoles.has(character) ? 0.1 : 1);
+    }
+
+    function pickWeighted(characters, lane, configuration, previousRoles, rng) {
+        const weighted = characters.map(character => ({ character, weight:effectiveWeight(configuration, character, lane, previousRoles) }))
+            .filter(item => item.weight > 0);
+        if (!weighted.length) return null;
+        let randomWeight = rng() * weighted.reduce((sum,item) => sum + item.weight, 0);
+        for (const item of weighted) {
+            randomWeight -= item.weight;
+            if (randomWeight <= 0) return item.character;
         }
-        return arr;
+        return weighted[weighted.length - 1].character;
+    }
+
+    function weightedOrder(characters, lane, configuration, previousRoles, rng) {
+        const remaining = [...characters], result = [];
+        while (remaining.length) {
+            const next = pickWeighted(remaining, lane, configuration, previousRoles, rng);
+            if (!next) break;
+            result.push(next);
+            remaining.splice(remaining.indexOf(next), 1);
+        }
+        return result;
+    }
+
+    function assign(slots, categories, configuration, previousRoles, rng, used = new Set(), assignment = new Map()) {
+        if (!slots.length) return assignment;
+        let selectedIndex = 0, selectedCount = Infinity;
+        slots.forEach((slot,index) => {
+            const lane = categories[slot.laneIndex].name;
+            const count = configuration.characters.filter(entry => !used.has(entry.character) && configuredWeight(configuration, entry.character, lane) > 0).length;
+            if (count < selectedCount) { selectedCount = count; selectedIndex = index; }
+        });
+        if (selectedCount === 0) return null;
+        const slot = slots[selectedIndex], lane = categories[slot.laneIndex].name;
+        const candidates = configuration.characters.map(entry => entry.character)
+            .filter(character => !used.has(character) && configuredWeight(configuration, character, lane) > 0);
+        const nextSlots = slots.filter((_,index) => index !== selectedIndex);
+        for (const character of weightedOrder(candidates, lane, configuration, previousRoles, rng)) {
+            const nextUsed = new Set(used); nextUsed.add(character);
+            const nextAssignment = new Map(assignment); nextAssignment.set(`${slot.team}:${slot.laneIndex}`, character);
+            const result = assign(nextSlots, categories, configuration, previousRoles, rng, nextUsed, nextAssignment);
+            if (result) return result;
+        }
+        return null;
+    }
+
+    function shuffle(values, rng) {
+        const result = [...values];
+        for (let index = result.length - 1; index > 0; index--) {
+            const randomIndex = Math.floor(rng() * (index + 1));
+            [result[index],result[randomIndex]] = [result[randomIndex],result[index]];
+        }
+        return result;
+    }
+
+    function generateResult(poolText, lastGameText, allowDuplicate, savedConfiguration, seed) {
+        const categories = parseRolePool(poolText);
+        if (!categories.length) throw new Error('角色池格式不正确或为空。');
+        const configuration = reconcileWeights(categories, savedConfiguration);
+        if (!allowDuplicate) {
+            const invalid = categories.find(category => configuration.characters.filter(entry => configuredWeight(configuration, entry.character, category.name) > 0).length < 2);
+            if (invalid) throw new Error(`分路“${invalid.name}”的可用角色数量不足 2 个。`);
+        }
+        const previousRoles = previousRoleSet(lastGameText), rng = mulberry32(seed);
+        let assignmentA, assignmentB;
+        if (allowDuplicate) {
+            assignmentA = assign(categories.map((_,laneIndex) => ({team:'A',laneIndex})), categories, configuration, previousRoles, rng);
+            assignmentB = assign(categories.map((_,laneIndex) => ({team:'B',laneIndex})), categories, configuration, previousRoles, rng);
+        } else {
+            const slots = categories.flatMap((_,laneIndex) => [{team:'A',laneIndex},{team:'B',laneIndex}]);
+            const assignment = assign(slots, categories, configuration, previousRoles, rng);
+            assignmentA = assignmentB = assignment;
+        }
+        if (!assignmentA || !assignmentB) throw new Error('当前分路权重无法组成完整且不重复的阵容。');
+        const rolesA = categories.map((_,index) => assignmentA.get(`A:${index}`));
+        const rolesB = categories.map((_,index) => assignmentB.get(`B:${index}`));
+        const players = shuffle(Array.from({length:categories.length * 2},(_,index) => index + 1), rng);
+        return { seed, playersA:players.slice(0,categories.length), playersB:players.slice(categories.length), rolesA, rolesB };
+    }
+
+    function formatResult(result) {
+        return `Group A\n${result.playersA.join('，')}\n${result.rolesA.join('，')}\n\nGroup B\n${result.playersB.join('，')}\n${result.rolesB.join('，')}`;
     }
 
     function generateGroups() {
-        // 1. 获取种子并初始化 RNG
-        const seed = Date.now();
-        const rng = mulberry32(seed);
-        document.getElementById('seedInfo').textContent = `随机种子 (Timestamp): ${seed}`;
-
-        // 2. 解析当前角色池
         const poolText = document.getElementById('rolePoolInput').value;
-        const rolePool = parseRolePool(poolText);
-        localStorage.setItem('moba_role_pool', poolText); // 自动保存
+        localStorage.setItem('moba_role_pool', poolText);
+        try {
+            const precedingRolesText = previousRolesTextFromResult(currentResult);
+            const nextResult = generateResult(
+                poolText,
+                document.getElementById('avoidPrevious').checked ? precedingRolesText : '',
+                document.getElementById('allowDuplicate').checked,
+                loadWeights(poolText),
+                Date.now(),
+            );
+            currentResult = nextResult;
+            previousResultRolesText = precedingRolesText;
+            renderResult();
+        } catch (error) { alert(`⚠️ ${error.message}`); }
+    }
 
-        const roleKeys = Object.keys(rolePool);
-        if (roleKeys.length === 0) {
-            alert("⚠️ 角色池格式不正确或为空！\n请确保每行格式为：职业名：角色1、角色2");
-            return;
-        }
+    function replacementCandidates(result, team, index, poolText, allowDuplicate, configuration) {
+        const categories = parseRolePool(poolText), lane = categories[index]?.name;
+        if (!lane) return [];
+        const sameTeam = team === 'A' ? result.rolesA : result.rolesB;
+        const forbidden = new Set(allowDuplicate ? sameTeam : [...result.rolesA,...result.rolesB]);
+        return configuration.characters.map(entry => entry.character)
+            .filter(character => character !== sameTeam[index] && !forbidden.has(character) && configuredWeight(configuration, character, lane) > 0);
+    }
 
-        // 3. 解析上一局角色
-        const lastGameInput = document.getElementById('lastGameInput').value;
-        const lastGameRoles = lastGameInput.match(/[\u4e00-\u9fa5a-zA-Z]+/g) || [];
+    function replaceWebRole(team,index) {
+        if (!currentResult) return;
+        const poolText = document.getElementById('rolePoolInput').value;
+        const configuration = loadWeights(poolText), categories = parseRolePool(poolText);
+        const candidates = replacementCandidates(currentResult, team, index, poolText, document.getElementById('allowDuplicate').checked, configuration);
+        const previousRoles = previousRoleSet(
+            document.getElementById('avoidPrevious').checked ? previousResultRolesText : '',
+        );
+        const replacement = pickWeighted(candidates, categories[index].name, configuration, previousRoles, mulberry32(Date.now()));
+        if (!replacement) return alert('这个分路没有其他权重大于 0 的可用角色。请调整分路权重、补充角色，或开启镜像模式。');
+        (team === 'A' ? currentResult.rolesA : currentResult.rolesB)[index] = replacement;
+        renderResult();
+    }
 
-        // 4. 获取开关状态
-        const allowDuplicate = document.getElementById('allowDuplicate').checked;
-
-        // 5. 按职业分配角色
-        const groupA = {};
-        const groupB = {};
-        let hasError = false;
-
-        roleKeys.forEach(key => {
-            const poolForRole = rolePool[key];
-            
-            // 如果不允许重复，且该职业角色少于2个，则报错
-            if (!allowDuplicate && poolForRole.length < 2) {
-                alert(`⚠️ 职业 [${key}] 的角色数量不足 2 个，且未开启“允许重复”模式，无法分配给 A/B 两组！\n请补充角色或勾选“允许两组使用相同角色”。`);
-                hasError = true;
-                return;
-            }
-            
-            let roleA, roleB;
-            if (allowDuplicate) {
-                // 允许重复：A和B独立抽取，可能相同
-                roleA = pickOneRole(poolForRole, lastGameRoles, rng);
-                roleB = pickOneRole(poolForRole, lastGameRoles, rng);
-            } else {
-                // 不允许重复：抽取两个不同的角色，并随机分配给A和B
-                const pair = pickTwoDistinct(poolForRole, lastGameRoles, rng);
-                if (rng() > 0.5) {
-                    roleA = pair[0];
-                    roleB = pair[1];
-                } else {
-                    roleA = pair[1];
-                    roleB = pair[0];
-                }
-            }
-            
-            groupA[key] = roleA;
-            groupB[key] = roleB;
+    function renderResult() {
+        document.getElementById('seedInfo').textContent = `随机种子：${currentResult.seed}`;
+        document.getElementById('outputText').textContent = formatResult(currentResult);
+        const interactive = document.getElementById('interactiveRoles');
+        interactive.innerHTML = '';
+        ['A','B'].forEach(team => {
+            const label = document.createElement('div'); label.className = 'hint'; label.textContent = `Group ${team} 角色`;
+            const grid = document.createElement('div'); grid.className = 'team-roles';
+            (team === 'A' ? currentResult.rolesA : currentResult.rolesB).forEach((role,index) => {
+                const button = document.createElement('button'); button.className = 'role-chip'; button.textContent = role;
+                button.setAttribute('aria-label', `Group ${team} ${role}，点按按权重更换`);
+                button.onclick = () => replaceWebRole(team,index); grid.appendChild(button);
+            });
+            interactive.append(label,grid);
         });
-
-        if (hasError) return;
-
-        // 6. 分配玩家序号并打乱 (根据职业数量动态计算总人数)
-        const numRoles = roleKeys.length;
-        const totalPlayers = numRoles * 2;
-        const players = Array.from({length: totalPlayers}, (_, i) => i + 1);
-        const shuffledPlayers = shuffle(players, rng);
-        
-        const playersA = shuffledPlayers.slice(0, numRoles);
-        const playersB = shuffledPlayers.slice(numRoles);
-
-        // 7. 格式化输出 (严格按照要求的格式，使用中文逗号)
-        const rolesA_str = roleKeys.map(k => groupA[k]).join('，');
-        const rolesB_str = roleKeys.map(k => groupB[k]).join('，');
-        
-        const resultText = 
-`Group A
-${playersA.join('，')}
-${rolesA_str}
-
-Group B
-${playersB.join('，')}
-${rolesB_str}`;
-
-        // 8. 渲染到页面
-        document.getElementById('outputText').textContent = resultText;
         document.getElementById('resultArea').style.display = 'block';
-        
-        // 平滑滚动到结果区域
-        document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        document.getElementById('resultArea').scrollIntoView({behavior:'smooth',block:'nearest'});
+    }
+
+    function openWeightSettings() {
+        const poolText = document.getElementById('rolePoolInput').value;
+        weightCategories = parseRolePool(poolText);
+        if (!weightCategories.length) return alert('请先输入有效的角色池。');
+        localStorage.setItem('moba_role_pool', poolText);
+        weightDraft = JSON.parse(JSON.stringify(loadWeights(poolText)));
+        renderWeightRows();
+        document.getElementById('mainPage').classList.add('hidden');
+        document.getElementById('weightPage').classList.remove('hidden');
+        window.scrollTo(0,0);
+    }
+
+    function renderWeightRows() {
+        const host = document.getElementById('weightRows'); host.innerHTML = '';
+        weightDraft.characters.forEach(entry => {
+            const card = document.createElement('section'); card.className = 'card weight-card';
+            const heading = document.createElement('div'); heading.className = 'weight-heading';
+            const name = document.createElement('strong'); name.textContent = entry.character;
+            const total = document.createElement('span'); total.className = 'weight-total'; total.dataset.totalFor = entry.character;
+            heading.append(name,total); card.appendChild(heading);
+            const grid = document.createElement('div'); grid.className = 'weight-grid';
+            weightCategories.forEach(category => {
+                const label = document.createElement('label'); label.textContent = category.name;
+                const input = document.createElement('input'); input.className = 'weight-input'; input.type = 'number'; input.min = '0'; input.step = '1';
+                input.value = entry.laneWeights[category.name] ?? 0;
+                input.setAttribute('aria-label', `${entry.character} ${category.name}权重`);
+                input.oninput = () => { entry.laneWeights[category.name] = input.value; updateWeightTotal(entry); };
+                input.onchange = () => commitWeightRow(entry);
+                label.appendChild(input); grid.appendChild(label);
+            });
+            card.appendChild(grid); host.appendChild(card); updateWeightTotal(entry);
+        });
+    }
+
+    function draftValues(entry) {
+        const values = weightCategories.map(category => Number(entry.laneWeights[category.name]));
+        return values.every(value => Number.isInteger(value) && value >= 0) ? values : null;
+    }
+
+    function updateWeightTotal(entry) {
+        const indicator = [...document.querySelectorAll('[data-total-for]')].find(node => node.dataset.totalFor === entry.character);
+        if (!indicator) return;
+        const values = draftValues(entry), total = values?.reduce((sum,value) => sum + value, 0);
+        indicator.className = 'weight-total';
+        if (total === undefined) { indicator.textContent = '请输入整数'; indicator.classList.add('invalid'); }
+        else if (total === 100) { indicator.textContent = '100 / 100'; indicator.classList.add('complete'); }
+        else if (total < 100) indicator.textContent = `还差 ${100-total}`;
+        else indicator.textContent = '提交后自动换算';
+    }
+
+    function commitWeightRow(entry) {
+        const values = draftValues(entry); if (!values) return;
+        const normalized = normalizeToHundred(values); if (!normalized) return;
+        weightCategories.forEach((category,index) => entry.laneWeights[category.name] = normalized[index]);
+        renderWeightRows();
+    }
+
+    function weightDraftIsValid() {
+        return weightDraft.characters.every(entry => {
+            const values = draftValues(entry);
+            return values && values.reduce((sum,value) => sum + value, 0) === 100;
+        });
+    }
+
+    function saveWeightSettings() {
+        weightDraft.characters.forEach(commitWeightRow);
+        if (!weightDraftIsValid()) return alert('每个角色的权重合计必须为 100，且只能使用非负整数。');
+        localStorage.setItem(WEIGHT_KEY, JSON.stringify(weightDraft));
+        showMainPage();
+    }
+
+    function closeWeightSettings() {
+        weightDraft.characters.forEach(commitWeightRow);
+        if (!weightDraftIsValid() && !confirm('存在未完成的权重设置。确定放弃修改吗？')) return;
+        showMainPage();
+    }
+
+    function showMainPage() {
+        document.getElementById('weightPage').classList.add('hidden');
+        document.getElementById('mainPage').classList.remove('hidden');
+        weightDraft = null; window.scrollTo(0,0);
+    }
+
+    function resetDefaultPool() {
+        if (confirm('确定恢复默认角色池吗？角色池修改将丢失。')) {
+            document.getElementById('rolePoolInput').value = DEFAULT_POOL_TEXT;
+            localStorage.setItem('moba_role_pool', DEFAULT_POOL_TEXT);
+            loadWeights(DEFAULT_POOL_TEXT); generateGroups();
+        }
     }
 
     function copyResult() {
-        const text = document.getElementById('outputText').textContent;
-        navigator.clipboard.writeText(text).then(() => {
-            const btn = document.querySelector('.copy-btn');
-            const originalText = btn.textContent;
-            btn.textContent = '✅ 已复制到剪贴板！';
-            btn.style.borderColor = 'var(--success)';
-            btn.style.color = 'var(--success)';
-            setTimeout(() => {
-                btn.textContent = originalText;
-                btn.style.borderColor = 'var(--accent)';
-                btn.style.color = 'var(--accent)';
-            }, 2000);
-        }).catch(err => {
-            alert('复制失败，请手动长按复制');
-        });
-        }
-</script>
+        navigator.clipboard.writeText(document.getElementById('outputText').textContent)
+            .then(() => alert('已复制到剪贴板')).catch(() => alert('复制失败，请手动复制。'));
+    }
 
+    window.onload = function() {
+        const poolInput = document.getElementById('rolePoolInput');
+        poolInput.value = localStorage.getItem('moba_role_pool') || DEFAULT_POOL_TEXT;
+        poolInput.addEventListener('input', () => localStorage.setItem('moba_role_pool', poolInput.value));
+        document.getElementById('allowDuplicate').addEventListener('change', function() {
+            document.getElementById('modeBadge').style.display = this.checked ? 'inline-block' : 'none';
+        });
+        generateGroups();
+    };
+
+    window.MobaWeights = {
+        parseRolePool, normalizeToHundred, reconcileWeights, effectiveWeight,
+        loadWeights, generateResult, replacementCandidates, previousRolesTextFromResult,
+        formatResult, DEFAULT_POOL_TEXT,
+    };
+</script>
 </body>
 </html>

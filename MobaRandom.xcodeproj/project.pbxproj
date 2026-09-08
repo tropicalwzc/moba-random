@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		27C14C89DA0707400A36E2AF /* MobaRandomApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB9EEC18DE5FBF7030D29073 /* MobaRandomApp.swift */; };
 		A61B5E30039ED21B989221BF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 51CEA51B4FAF578E31C3A1CD /* Assets.xcassets */; };
+		B7314D8A19C14BA5A1F30001 /* default-role-weights-v1.json in Resources */ = {isa = PBXBuildFile; fileRef = B7314D8A19C14BA5A1F30002 /* default-role-weights-v1.json */; };
 		C4CF78066FED1B3898A23BF4 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FA9760474691960F61A49D3 /* ContentView.swift */; };
 		D90F9D976622756DF59A2CFC /* GroupingEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AFBB9927659A45E4CFE7500 /* GroupingEngine.swift */; };
 		F0337DA1610036E71F304428 /* GroupingEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30D615B834DCD024AEBF1B42 /* GroupingEngineTests.swift */; };
@@ -31,6 +32,7 @@
 		4DA37E3D73960C5DD864FE9B /* MobaRandom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MobaRandom.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		51CEA51B4FAF578E31C3A1CD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AB9EEC18DE5FBF7030D29073 /* MobaRandomApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobaRandomApp.swift; sourceTree = "<group>"; };
+		B7314D8A19C14BA5A1F30002 /* default-role-weights-v1.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "default-role-weights-v1.json"; sourceTree = "<group>"; };
 		D00E695925D9201C783EDFFF /* MobaRandomTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = MobaRandomTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -39,6 +41,7 @@
 			isa = PBXGroup;
 			children = (
 				51CEA51B4FAF578E31C3A1CD /* Assets.xcassets */,
+				B7314D8A19C14BA5A1F30002 /* default-role-weights-v1.json */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -181,6 +184,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A61B5E30039ED21B989221BF /* Assets.xcassets in Resources */,
+				B7314D8A19C14BA5A1F30001 /* default-role-weights-v1.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -239,15 +243,16 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 39R699SCD9;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MobaRandom/Config/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.tropicalfish.mobarandom;
 				PRODUCT_MODULE_NAME = MobaRandom;
 				PRODUCT_NAME = MobaRandom;
@@ -403,15 +408,16 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 3;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 39R699SCD9;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = MobaRandom/Config/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = com.tropicalfish.mobarandom;
 				PRODUCT_MODULE_NAME = MobaRandom;
 				PRODUCT_NAME = MobaRandom;
@@ -431,7 +437,7 @@
 				0601CC9A5B96C4E714062F31 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
+			defaultConfigurationName = Release;
 		};
 		B55757E329D7BB1D4129A50F /* Build configuration list for PBXNativeTarget "MobaRandom" */ = {
 			isa = XCConfigurationList;
@@ -440,7 +446,7 @@
 				904E1674143B043633BB2858 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
+			defaultConfigurationName = Release;
 		};
 		E5086CEFB18729D14660FAFC /* Build configuration list for PBXProject "MobaRandom" */ = {
 			isa = XCConfigurationList;
@@ -449,7 +455,7 @@
 				317AE16B073ACC0F097F77A4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
