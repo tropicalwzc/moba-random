@@ -6,7 +6,7 @@
 ## Android
 1. [Github下载](https://github.com/tropicalwzc/moba-random/releases/download/1.0/moba-random_1.01.apk)
 或者
-2. [百度网盘链接](https://pan.baidu.com/s/1IQLXuHYsIjNuMb8pMzM14w?pwd=sd8n)
+2. [百度网盘链接](https://pan.baidu.com/s/5f55dPT_-QQJnCQ8_AMiHTg)
 
 ## Windows
 [下载html在浏览器运行](https://github.com/tropicalwzc/moba-random/blob/main/moba-random.html)
