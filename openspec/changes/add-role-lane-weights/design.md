@@ -117,6 +117,24 @@ The supplied transfer payload is bundled as an application JSON resource. Before
 
 The flag is written only after a successful import. It is never cleared by ordinary role-pool edits, weight edits, clipboard imports, or later launches, so the built-in preset cannot overwrite subsequent user customization. A future intentionally different preset must use a new migration identifier.
 
+### Complete Android history and transfer behavior
+
+Android keeps the history card header visible but collapses its entry list by default. Every successful grouping collapses the list before scrolling the main container to the top of the result card, so adding a history entry cannot pull the visible viewport below the current result. Users can explicitly expand or collapse history from the header.
+
+The Android weight page uses the same ordered-lane transfer contract and validation rules as iOS. Export writes the current valid draft to the system clipboard. Import rejects malformed or invalid data without mutation; a valid import persists both the canonical weight configuration and the homepage role-pool text, rebuilds the open editor immediately, and refreshes the homepage input when the activity resumes.
+
+The supplied preset is also bundled as an Android raw resource. Before the first automatic grouping, Android checks its own preset-specific SharedPreferences marker, validates the resource through the clipboard import path, and atomically persists the weights, derived pool, and marker. Failed validation leaves the marker absent and current local data unchanged; success prevents later launches from overwriting user changes.
+
+### Revise the bundled preset across native clients
+
+The replacement payload is bundled as preset v2 on both iOS and Android. Each client checks a new v2 migration marker rather than reusing the v1 marker, so an installation that already imported v1 still imports v2 once after upgrading. A fresh installation imports only the latest bundled preset through the same path. The native application versions and build numbers are incremented together with this migration.
+
+### Compact native tablet weight grids
+
+The iOS card grid lowers its adaptive minimum card width and uses compact, narrower numeric fields with reduced inter-field spacing. At the 9.7-inch iPad landscape width, three cards fit across and the four standard lane fields fit fully inside each card; horizontal scrolling remains available only for configurations with additional or unusually long custom lanes.
+
+Android replaces the single vertical character list with a `GridLayout`. The column count is derived from `screenWidthDp`: one column on phones, two on ordinary tablet widths, and three on wide/landscape tablets. Compact numeric fields and card padding keep the standard four lanes readable, while each card retains local horizontal overflow support for custom lane counts.
+
 ## Risks / Trade-offs
 
 - [Name-based identity loses customization when a character or lane is renamed] -> Treat rename as remove/add and make that behavior explicit; the text format offers no durable identifier.

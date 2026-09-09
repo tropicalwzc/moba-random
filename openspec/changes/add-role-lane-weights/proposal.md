@@ -16,6 +16,9 @@ The current grouping engine treats every character listed under a lane as equall
 - Keep iOS, Android, and the standalone web version behaviorally aligned.
 - Optimize the iPad weight editor into a multi-card grid and add iOS clipboard JSON import/export that can rebuild the homepage role-pool display from each character's highest-weight lane.
 - Bundle the supplied iOS weight preset and apply it once after upgrading to the new version, including its derived homepage role pool, without overwriting later user changes on subsequent launches.
+- Keep Android grouping results anchored by collapsing history by default and after generation, and add equivalent Android clipboard JSON transfer plus the same one-time bundled preset migration.
+- Revise the bundled preset on both iOS and Android with the supplied 30-character payload, using a new migration identifier so installations that already applied the earlier preset receive this upgrade exactly once.
+- Compact the native tablet weight editors so a 9.7-inch landscape iPad fits three complete cards per row without clipping the fourth weight, while Android tablets adapt between three- and two-card rows.
 
 ## Capabilities
 

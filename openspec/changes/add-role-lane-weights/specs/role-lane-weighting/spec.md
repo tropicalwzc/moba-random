@@ -235,3 +235,74 @@ The iOS application SHALL apply the supplied bundled weight JSON once for the co
 #### Scenario: Preset cannot be loaded
 - **WHEN** the bundled resource is missing or fails weight validation
 - **THEN** the application does not record the migration marker and continues using the existing valid local configuration
+
+### Requirement: Stable Android result and collapsible history
+The Android application SHALL keep the newest grouping result in view while retaining access to saved history.
+
+#### Scenario: Successful grouping
+- **WHEN** the user generates a grouping result
+- **THEN** Android collapses the history entries and scrolls to the top of the current result card
+
+#### Scenario: Inspect history
+- **WHEN** the user activates the history expand control
+- **THEN** Android displays the saved history entries and allows the user to collapse them again
+
+### Requirement: Android clipboard weight transfer
+The Android application SHALL provide the same validated ordered-lane JSON import and export behavior through the system clipboard as iOS.
+
+#### Scenario: Export current Android weights
+- **WHEN** the user exports while every draft row is valid
+- **THEN** Android copies versioned JSON containing ordered lanes and all character weights to the clipboard
+
+#### Scenario: Import and refresh Android displays
+- **WHEN** Android imports valid weight JSON
+- **THEN** the open editor, persisted weights, and homepage role-pool text immediately use the imported configuration and highest-weight lane ownership
+
+#### Scenario: Reject invalid Android import
+- **WHEN** clipboard JSON is malformed or fails name, integer, non-negative, uniqueness, or total validation
+- **THEN** Android preserves the current editor and homepage data and explains that the JSON cannot be imported
+
+### Requirement: One-time Android bundled weight preset
+The Android application SHALL apply the supplied bundled weight JSON once for the corresponding application upgrade.
+
+#### Scenario: Android launch without migration marker
+- **WHEN** the new Android version launches and its bundled-preset marker is absent
+- **THEN** Android validates and atomically persists the bundled weights, canonical homepage role pool, and marker before initial generation
+
+#### Scenario: Android subsequent launch
+- **WHEN** the Android bundled-preset marker is present
+- **THEN** Android preserves later user role-pool and weight changes without applying the preset again
+
+#### Scenario: Android preset cannot be imported
+- **WHEN** the Android bundled resource is missing or invalid
+- **THEN** Android leaves the marker absent and continues with the existing local configuration
+
+### Requirement: Revised cross-client bundled preset
+The iOS and Android applications SHALL apply the supplied revised 30-character preset once using a migration identity distinct from the previous preset.
+
+#### Scenario: Upgrade after applying the previous preset
+- **WHEN** an installation has the previous preset marker but does not have the revised preset marker
+- **THEN** the client imports the revised bundled payload and records the revised marker
+
+#### Scenario: Launch after applying the revised preset
+- **WHEN** the revised preset marker is already present
+- **THEN** the client preserves subsequent user customization without importing the revised payload again
+
+#### Scenario: Native release versions
+- **WHEN** the revised preset ships
+- **THEN** both native clients expose incremented application version and build identifiers
+
+### Requirement: Compact native tablet weight grids
+The native weight editors SHALL use available tablet width efficiently without clipping the standard four lane inputs.
+
+#### Scenario: 9.7-inch iPad landscape
+- **WHEN** the iOS weight editor is shown on a 9.7-inch iPad in landscape with the four standard lanes
+- **THEN** three character cards fit per row and all four numeric fields are fully visible without horizontal interaction
+
+#### Scenario: Android tablet widths
+- **WHEN** the Android weight editor is shown on tablet-sized widths
+- **THEN** it displays two character cards per row at ordinary tablet width and three per row at wide landscape width
+
+#### Scenario: Phone and custom-lane fallback
+- **WHEN** the available width is compact or a card contains more lanes than fit
+- **THEN** the editor uses one card per row on phones and preserves local horizontal scrolling within an overflowing card

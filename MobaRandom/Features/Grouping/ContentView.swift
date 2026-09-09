@@ -479,9 +479,9 @@ private struct RoleWeightSettingsView: View {
                 }
 
                 LazyVGrid(
-                    columns: [GridItem(.adaptive(minimum: 320, maximum: 440), spacing: 14)],
+                    columns: [GridItem(.adaptive(minimum: 288, maximum: 420), spacing: 12)],
                     alignment: .center,
-                    spacing: 14
+                    spacing: 12
                 ) {
                     ForEach(characters, id: \.self) { character in
                         characterCard(character)
@@ -554,7 +554,7 @@ private struct RoleWeightSettingsView: View {
             }
 
             ScrollView(.horizontal) {
-                HStack(spacing: 12) {
+                HStack(spacing: 8) {
                     ForEach(lanes, id: \.self) { lane in
                         VStack(alignment: .leading, spacing: 6) {
                             Text(lane)
@@ -564,7 +564,8 @@ private struct RoleWeightSettingsView: View {
                                 .keyboardType(.numberPad)
                                 .multilineTextAlignment(.center)
                                 .textFieldStyle(.roundedBorder)
-                                .frame(width: 76)
+                                .controlSize(.small)
+                                .frame(width: 56)
                                 .focused($focusedField, equals: FieldID(character: character, lane: lane))
                                 .onSubmit { commitRow(character) }
                                 .accessibilityLabel("\(character) \(lane)权重")

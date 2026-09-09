@@ -10,6 +10,15 @@
     <string name="weight_settings_title">分路权重</string>
     <string name="weight_settings_hint">每个角色的整数权重合计必须为 100。提交后若超过 100，会按当前比例自动换算。</string>
     <string name="save_weights">保存权重</string>
+    <string name="export_weights_json">导出 JSON</string>
+    <string name="import_weights_json">导入 JSON</string>
+    <string name="weight_export_success_title">已导出</string>
+    <string name="weight_export_success_message">权重 JSON 已复制到剪贴板。</string>
+    <string name="weight_export_invalid">请先让每个角色的权重合计为 100。</string>
+    <string name="weight_import_success_title">导入成功</string>
+    <string name="weight_import_success_message">权重设置与主页角色池已按最新 JSON 更新。</string>
+    <string name="weight_import_failed_title">无法导入</string>
+    <string name="weight_clipboard_empty">剪贴板中没有文本。</string>
     <string name="weight_field_description">%1$s %2$s权重</string>
     <string name="weight_invalid_integer">请输入整数</string>
     <string name="weight_total_complete">100 / 100</string>
@@ -42,6 +51,8 @@
     <string name="swap_hint">💡  点按任意角色，可在同一分路的其他角色中随机更换。紫色角色表示本局已更换。</string>
     <string name="swap_unavailable">这个分路没有其他权重大于 0 的可用角色。请调整分路权重、补充角色，或开启镜像模式。</string>
     <string name="history_heading">🕘  历史记录（%1$d/100）</string>
+    <string name="expand_history">展开</string>
+    <string name="collapse_history">收起</string>
     <string name="clear_history">清空</string>
     <string name="clear_history_title">清空全部历史记录？</string>
     <string name="clear_history_message">最多保存的 100 局记录将被永久删除。</string>

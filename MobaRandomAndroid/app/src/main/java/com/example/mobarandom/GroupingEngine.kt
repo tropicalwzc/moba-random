@@ -155,7 +155,7 @@ object GroupingEngine {
             if (separatorIndex < 0) return@forEach
             val name = line.substring(0, separatorIndex).trim()
             val roles = line.substring(separatorIndex + 1).trim().split(roleSeparator).filter(String::isNotEmpty)
-            if (name.isNotEmpty() && roles.isNotEmpty()) categories[name] = roles
+            if (name.isNotEmpty()) categories[name] = roles
         }
         return categories.map { (name, roles) -> RoleCategory(name, roles) }
     }

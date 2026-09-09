@@ -281,14 +281,14 @@ final class GroupingEngineTests: XCTestCase {
             currentLanes: ["射手", "打野", "中路", "战士"]
         )
 
-        XCTAssertEqual(imported.configuration.characters.count, 25)
+        XCTAssertEqual(imported.configuration.characters.count, 30)
         XCTAssertEqual(
             imported.poolText,
             """
-            射手：温迪、甘雨、宵宫、提纳里、公子、夜兰
+            射手：温迪、甘雨、宵宫、提纳里、公子、夜兰、赛索斯
             打野：绫华、胡桃、雷神、刻晴、牢大
-            中路：希格雯、钟离、八重、龙王、少女、纳西妲
-            战士：菲林斯、行秋、女仆、仆人、班尼特、丝柯克、点刀、魈
+            中路：希格雯、钟离、八重、龙王、少女、纳西妲、可莉
+            战士：菲林斯、行秋、女仆、仆人、班尼特、丝柯克、点刀、魈、琴、洛恩、迪卢克
             """
         )
         let character = imported.configuration.characters.first { $0.character == "温迪" }
@@ -301,6 +301,7 @@ final class GroupingEngineTests: XCTestCase {
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
         defer { defaults.removePersistentDomain(forName: suiteName) }
 
+        defaults.set(true, forKey: "moba_builtin_weight_preset_v1_applied")
         XCTAssertTrue(BuiltInWeightPresetMigration.isPending(in: defaults))
         BuiltInWeightPresetMigration.markApplied(in: defaults)
         XCTAssertFalse(BuiltInWeightPresetMigration.isPending(in: defaults))

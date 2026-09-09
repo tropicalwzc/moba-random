@@ -51,6 +51,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var setupGenerateButton: MaterialButton
     private lateinit var historyCard: MaterialCardView
     private lateinit var historyHeading: TextView
+    private lateinit var historyToggleButton: MaterialButton
     private lateinit var historyContainer: LinearLayout
 
     private var currentResult: GroupingResult? = null
@@ -58,6 +59,7 @@ class MainActivity : AppCompatActivity() {
     private var history = mutableListOf<GameHistoryEntry>()
     private var currentHistoryId: String? = null
     private var previousRolesText = ""
+    private var historyExpanded = false
     private val preferences by lazy {
         getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
     }
@@ -67,6 +69,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         bindViews()
+        RoleWeightStorage.applyBuiltInPresetIfNeeded(this)
         configureRolePool()
         history = loadHistory().take(GroupingEngine.HISTORY_LIMIT).toMutableList()
         configureActions()
@@ -91,7 +94,15 @@ class MainActivity : AppCompatActivity() {
         setupGenerateButton = findViewById(R.id.setupGenerateButton)
         historyCard = findViewById(R.id.historyCard)
         historyHeading = findViewById(R.id.historyHeading)
+        historyToggleButton = findViewById(R.id.historyToggleButton)
         historyContainer = findViewById(R.id.historyContainer)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!::rolePoolInput.isInitialized) return
+        val savedPool = preferences.getString(RoleWeightStorage.KEY_ROLE_POOL, null) ?: return
+        if (savedPool != rolePoolInput.text?.toString()) rolePoolInput.setText(savedPool)
     }
 
     private fun configureRolePool() {
@@ -138,6 +149,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         copyButton.setOnClickListener { copyResult() }
+        historyToggleButton.setOnClickListener {
+            historyExpanded = !historyExpanded
+            renderHistory()
+        }
         findViewById<MaterialButton>(R.id.clearHistoryButton).setOnClickListener {
             MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.clear_history_title)
@@ -145,6 +160,7 @@ class MainActivity : AppCompatActivity() {
                 .setNegativeButton(R.string.cancel, null)
                 .setPositiveButton(R.string.clear_history_confirm) { _, _ ->
                     history.clear()
+                    historyExpanded = false
                     currentHistoryId = null
                     saveHistory()
                     renderHistory()
@@ -168,13 +184,16 @@ class MainActivity : AppCompatActivity() {
             previousRolesText = precedingRolesText
             swappedSlots.clear()
             currentHistoryId = null
-            if (recordInHistory) record(result, swappedSlots)
+            if (recordInHistory) {
+                historyExpanded = false
+                record(result, swappedSlots)
+            }
             renderResult(result)
             generateButton.performHapticFeedback(HapticFeedbackConstants.CONTEXT_CLICK)
 
             if (scrollToResult) {
                 resultCard.post {
-                    scrollView.smoothScrollTo(0, resultCard.bottom)
+                    scrollView.smoothScrollTo(0, resultCard.top)
                 }
             }
         } catch (error: GroupingException) {
@@ -309,6 +328,12 @@ class MainActivity : AppCompatActivity() {
         historyHeading.text = getString(R.string.history_heading, history.size)
         historyContainer.removeAllViews()
         historyCard.visibility = if (history.isEmpty()) View.GONE else View.VISIBLE
+        historyToggleButton.text = getString(
+            if (historyExpanded) R.string.collapse_history else R.string.expand_history
+        )
+        historyToggleButton.contentDescription = historyToggleButton.text
+        historyContainer.visibility = if (historyExpanded) View.VISIBLE else View.GONE
+        if (!historyExpanded) return
 
         val formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
         history.forEachIndexed { index, entry ->
@@ -408,7 +433,7 @@ class MainActivity : AppCompatActivity() {
 
     private companion object {
         const val PREFERENCES_NAME = "moba_random_preferences"
-        const val KEY_ROLE_POOL = "moba_role_pool"
+        const val KEY_ROLE_POOL = RoleWeightStorage.KEY_ROLE_POOL
         const val KEY_GAME_HISTORY = "moba_game_history_v1"
     }
 }

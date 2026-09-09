@@ -1,5 +1,7 @@
 package com.example.mobarandom
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.Typeface
 import android.os.Bundle
@@ -10,6 +12,7 @@ import android.view.Gravity
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.HorizontalScrollView
+import android.widget.GridLayout
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -26,6 +29,7 @@ import com.google.android.material.textfield.TextInputLayout
 class WeightSettingsActivity : AppCompatActivity() {
     private lateinit var categories: List<RoleCategory>
     private lateinit var configuration: RoleWeightConfiguration
+    private lateinit var characterContainer: GridLayout
     private val fields = linkedMapOf<Pair<String, String>, TextInputEditText>()
     private val totals = linkedMapOf<String, TextView>()
 
@@ -68,7 +72,33 @@ class WeightSettingsActivity : AppCompatActivity() {
             setTextColor(resolveColor(com.google.android.material.R.attr.colorOnSurfaceVariant))
             setPadding(0, 0, 0, dp(12))
         })
-        configuration.characters.forEach { content.addView(buildCharacterCard(it), marginParams()) }
+        content.addView(LinearLayout(this).apply {
+            orientation = LinearLayout.HORIZONTAL
+            addView(MaterialButton(this@WeightSettingsActivity).apply {
+                text = getString(R.string.export_weights_json)
+                setOnClickListener { exportJson() }
+            }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
+                marginEnd = dp(6)
+            })
+            addView(MaterialButton(this@WeightSettingsActivity).apply {
+                text = getString(R.string.import_weights_json)
+                setOnClickListener { importJson() }
+            }, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f).apply {
+                marginStart = dp(6)
+            })
+        }, marginParams())
+        characterContainer = GridLayout(this).apply {
+            columnCount = weightGridColumnCount(resources.configuration.screenWidthDp)
+            alignmentMode = GridLayout.ALIGN_MARGINS
+        }
+        content.addView(
+            characterContainer,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+            ),
+        )
+        renderCharacterCards()
         scroll.addView(content)
         root.addView(scroll, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f))
 
@@ -81,11 +111,27 @@ class WeightSettingsActivity : AppCompatActivity() {
         return root
     }
 
+    private fun renderCharacterCards() {
+        fields.clear()
+        totals.clear()
+        characterContainer.removeAllViews()
+        val columns = characterContainer.columnCount
+        configuration.characters.forEachIndexed { index, entry ->
+            characterContainer.addView(buildCharacterCard(entry), GridLayout.LayoutParams().apply {
+                width = 0
+                height = GridLayout.LayoutParams.WRAP_CONTENT
+                rowSpec = GridLayout.spec(index / columns)
+                columnSpec = GridLayout.spec(index % columns, 1f)
+                setMargins(dp(6), 0, dp(6), dp(12))
+            })
+        }
+    }
+
     private fun buildCharacterCard(entry: CharacterLaneWeights): MaterialCardView {
         val card = MaterialCardView(this)
         val body = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(16), dp(14), dp(16), dp(14))
+            setPadding(dp(10), dp(12), dp(10), dp(12))
         }
         val heading = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
@@ -131,11 +177,14 @@ class WeightSettingsActivity : AppCompatActivity() {
             row.addView(TextInputLayout(this).apply {
                 hint = category.name
                 addView(input)
-            }, LinearLayout.LayoutParams(dp(94), ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                marginEnd = dp(10)
+            }, LinearLayout.LayoutParams(dp(60), ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+                marginEnd = dp(4)
             })
         }
-        body.addView(HorizontalScrollView(this).apply { addView(row) })
+        body.addView(HorizontalScrollView(this).apply {
+            isHorizontalScrollBarEnabled = false
+            addView(row)
+        })
         card.addView(body)
         updateTotal(entry.character)
         return card
@@ -184,6 +233,21 @@ class WeightSettingsActivity : AppCompatActivity() {
 
     private fun save() {
         configuration.characters.forEach { commitRow(it.character) }
+        val updated = draftConfiguration()
+        if (updated == null) {
+            MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.weight_invalid_title)
+                .setMessage(R.string.weight_invalid_message)
+                .setPositiveButton(R.string.confirm, null)
+                .show()
+            return
+        }
+        RoleWeightStorage.save(this, updated)
+        setResult(RESULT_OK)
+        finish()
+    }
+
+    private fun draftConfiguration(): RoleWeightConfiguration? {
         val entries = configuration.characters.mapNotNull { entry ->
             val values = parsedValues(entry.character) ?: return@mapNotNull null
             if (values.sum() != 100) return@mapNotNull null
@@ -195,16 +259,61 @@ class WeightSettingsActivity : AppCompatActivity() {
                 sourceLane = entry.sourceLane,
             )
         }
-        if (entries.size != configuration.characters.size) {
-            MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.weight_invalid_title)
-                .setMessage(R.string.weight_invalid_message)
-                .setPositiveButton(R.string.confirm, null)
-                .show()
+        return entries.takeIf { it.size == configuration.characters.size }
+            ?.let { RoleWeightConfiguration(characters = it) }
+    }
+
+    private fun exportJson() {
+        currentFocus?.clearFocus()
+        configuration.characters.forEach { commitRow(it.character) }
+        val updated = draftConfiguration()
+        if (updated == null) {
+            showNotice(R.string.weight_invalid_title, getString(R.string.weight_export_invalid))
             return
         }
-        RoleWeightStorage.save(this, RoleWeightConfiguration(characters = entries))
-        finish()
+        runCatching {
+            RoleWeightTransfer.exportJson(categories.map { it.name }, updated)
+        }.onSuccess { json ->
+            getSystemService(ClipboardManager::class.java).setPrimaryClip(
+                ClipData.newPlainText(getString(R.string.weight_settings_title), json)
+            )
+            showNotice(R.string.weight_export_success_title, getString(R.string.weight_export_success_message))
+        }.onFailure { error ->
+            showNotice(R.string.weight_invalid_title, error.message ?: getString(R.string.weight_export_invalid))
+        }
+    }
+
+    private fun importJson() {
+        currentFocus?.clearFocus()
+        val clipboard = getSystemService(ClipboardManager::class.java)
+        val json = clipboard.primaryClip?.getItemAt(0)?.coerceToText(this)?.toString().orEmpty()
+        if (json.isBlank()) {
+            showNotice(R.string.weight_import_failed_title, getString(R.string.weight_clipboard_empty))
+            return
+        }
+        runCatching {
+            RoleWeightTransfer.importJson(json, categories.map { it.name })
+        }.onSuccess { imported ->
+            RoleWeightStorage.saveImported(this, imported)
+            categories = GroupingEngine.parseRolePool(imported.poolText)
+            configuration = imported.configuration
+            renderCharacterCards()
+            setResult(RESULT_OK)
+            showNotice(R.string.weight_import_success_title, getString(R.string.weight_import_success_message))
+        }.onFailure { error ->
+            showNotice(
+                R.string.weight_import_failed_title,
+                error.message ?: getString(R.string.weight_invalid_message),
+            )
+        }
+    }
+
+    private fun showNotice(title: Int, message: String) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(title)
+            .setMessage(message)
+            .setPositiveButton(R.string.confirm, null)
+            .show()
     }
 
     private fun attemptClose() {
@@ -240,4 +349,10 @@ class WeightSettingsActivity : AppCompatActivity() {
         const val EXTRA_POOL_TEXT = "pool_text"
         private const val KEY_ROLE_POOL = "moba_role_pool"
     }
+}
+
+internal fun weightGridColumnCount(screenWidthDp: Int): Int = when {
+    screenWidthDp >= 900 -> 3
+    screenWidthDp >= 600 -> 2
+    else -> 1
 }

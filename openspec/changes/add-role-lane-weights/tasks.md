@@ -66,3 +66,22 @@
 - [x] 10.2 Apply the preset before initial generation when a preset-specific migration marker is absent
 - [x] 10.3 Persist the derived homepage role pool and weights, and prevent repeat application after success
 - [x] 10.4 Add preset integrity and one-time migration tests, update documentation, and rerun iOS/OpenSpec validation
+
+## 11. Android History, Clipboard Transfer, and Preset Parity
+
+- [x] 11.1 Collapse Android history by default and after grouping, add an explicit toggle, and anchor scrolling at the current result
+- [x] 11.2 Add validated Android clipboard JSON import/export with immediate editor and homepage role-pool refresh
+- [x] 11.3 Bundle and atomically apply the supplied Android preset once using a preset-specific migration marker
+- [x] 11.4 Add Android transfer/derivation tests, update documentation, and run Android build plus strict OpenSpec validation
+
+## 12. Revised Cross-Client Built-In Preset
+
+- [x] 12.1 Replace the iOS and Android bundled resources with the supplied 30-character v2 preset
+- [x] 12.2 Use new v2 migration markers and increment both native application versions/builds
+- [x] 12.3 Update preset tests and documentation, run iOS/Android validation, and rebuild the Android APK
+
+## 13. Compact Native Tablet Weight Grids
+
+- [x] 13.1 Reduce iOS adaptive card and field widths so 9.7-inch landscape iPad shows three complete standard-lane cards per row
+- [x] 13.2 Add Android one/two/three-column adaptive character-card grid with compact fields and custom-lane overflow
+- [x] 13.3 Add Android breakpoint tests, update documentation, and rerun iOS/Android/OpenSpec validation

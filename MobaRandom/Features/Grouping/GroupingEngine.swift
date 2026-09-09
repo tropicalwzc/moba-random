@@ -266,8 +266,8 @@ enum RoleWeightTransfer {
 }
 
 enum BuiltInWeightPresetMigration {
-    static let markerKey = "moba_builtin_weight_preset_v1_applied"
-    static let resourceName = "default-role-weights-v1"
+    static let markerKey = "moba_builtin_weight_preset_v2_applied"
+    static let resourceName = "default-role-weights-v2"
 
     static func isPending(in defaults: UserDefaults) -> Bool {
         !defaults.bool(forKey: markerKey)

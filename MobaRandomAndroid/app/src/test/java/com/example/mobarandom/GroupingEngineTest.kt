@@ -214,4 +214,59 @@ class GroupingEngineTest {
             GroupingEngine.generate(pool, "", false, configuration, seed = 1)
         }
     }
+
+    @Test
+    fun importedWeightsBuildCanonicalHomepagePoolUsingLaneOrderForTies() {
+        val imported = RoleWeightTransfer.validatedImport(
+            lanes = listOf("射手", "打野", "中路", "战士"),
+            characters = listOf(
+                CharacterLaneWeights("温迪", mapOf("射手" to 80, "中路" to 20)),
+                CharacterLaneWeights("夜兰", mapOf("射手" to 50, "中路" to 50)),
+                CharacterLaneWeights("绫华", mapOf("打野" to 100)),
+                CharacterLaneWeights("钟离", mapOf("中路" to 100)),
+            ),
+        )
+
+        assertEquals(
+            "射手：温迪、夜兰\n打野：绫华\n中路：钟离\n战士：",
+            imported.poolText,
+        )
+        assertEquals("射手", imported.configuration.characters.first { it.character == "夜兰" }.sourceLane)
+        assertEquals(
+            mapOf("射手" to 80, "打野" to 0, "中路" to 20, "战士" to 0),
+            imported.configuration.characters.first { it.character == "温迪" }.laneWeights,
+        )
+        assertEquals(
+            listOf("射手", "打野", "中路", "战士"),
+            GroupingEngine.parseRolePool(imported.poolText).map { it.name },
+        )
+    }
+
+    @Test
+    fun importedWeightsRejectDuplicateNamesAndInvalidTotals() {
+        assertThrows(RoleWeightTransferException::class.java) {
+            RoleWeightTransfer.validatedImport(
+                lanes = listOf("射手", "中路"),
+                characters = listOf(
+                    CharacterLaneWeights("A", mapOf("射手" to 80, "中路" to 20)),
+                    CharacterLaneWeights("A", mapOf("射手" to 100, "中路" to 0)),
+                ),
+            )
+        }
+        assertThrows(RoleWeightTransferException::class.java) {
+            RoleWeightTransfer.validatedImport(
+                lanes = listOf("射手", "中路"),
+                characters = listOf(CharacterLaneWeights("A", mapOf("射手" to 80, "中路" to 10))),
+            )
+        }
+    }
+
+    @Test
+    fun weightSettingsGridAdaptsAcrossPhoneAndTabletWidths() {
+        assertEquals(1, weightGridColumnCount(599))
+        assertEquals(2, weightGridColumnCount(600))
+        assertEquals(2, weightGridColumnCount(899))
+        assertEquals(3, weightGridColumnCount(900))
+        assertEquals(3, weightGridColumnCount(1_024))
+    }
 }
