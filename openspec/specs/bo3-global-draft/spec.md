@@ -2,12 +2,12 @@
 
 ## Purpose
 
-Defines the native iOS BO3 global-BP draft board: the best-of-three series lifecycle, per-game ban/pick sequences, cross-game pick locking, seat assignment, winner handling, shared-pool availability, persistence, and the draft-board presentation.
+Defines the native iOS and Android BO3 global-BP draft board: the best-of-three series lifecycle, per-game ban/pick sequences, cross-game pick locking, seat assignment, winner handling, shared-pool availability, persistence, and the draft-board presentation.
 
 ## Requirements
 
 ### Requirement: Root tab access
-The iOS application SHALL expose the existing grouping screen and the BO3 draft board as two top-level tabs.
+The iOS and Android applications SHALL expose the existing grouping screen and the BO3 draft board as two top-level tabs.
 
 #### Scenario: Show both tabs
 - **WHEN** the application finishes launching
@@ -20,6 +20,14 @@ The iOS application SHALL expose the existing grouping screen and the BO3 draft 
 #### Scenario: Keep the grouping screen available
 - **WHEN** the user opens the 随机 tab
 - **THEN** the existing grouping, weight-settings, and history behavior remains available
+
+#### Scenario: Show Android tabs
+- **WHEN** the Android application finishes launching
+- **THEN** the root shows a bottom navigation bar with a 随机 item and a BO3 item
+
+#### Scenario: Restore the Android tab selection
+- **WHEN** the Android application relaunches after the user selected the BO3 tab
+- **THEN** the BO3 tab is restored unless the user explicitly returns to 随机
 
 ### Requirement: Series lifecycle
 The application SHALL manage a best-of-three series from the first game through a champion or an explicit reset.
@@ -390,7 +398,7 @@ The BO3 tab SHALL display bundled character avatars with alias resolution, eleme
 - **THEN** the avatar accent uses that element's color
 
 ### Requirement: Adaptive layout
-The BO3 board SHALL adapt to iPhone portrait, iPhone landscape, iPad portrait, and iPad landscape widths without losing access to the draft controls.
+The BO3 board SHALL adapt to iOS phone and tablet sizes and Android phone and tablet sizes without losing access to the draft controls.
 
 #### Scenario: iPhone portrait
 - **WHEN** the board is displayed at compact width and regular height
@@ -402,6 +410,18 @@ The BO3 board SHALL adapt to iPhone portrait, iPhone landscape, iPad portrait, a
 
 #### Scenario: iPad landscape
 - **WHEN** the board is displayed at regular width and compact height
+- **THEN** it uses a three-column arrangement with one team panel on each side and the arena and hero grid in the center
+
+#### Scenario: Android phone portrait
+- **WHEN** the Android board is displayed below 600 dp of width
+- **THEN** it uses a single compact column with the header, embedded timeline, lineup, filters, and scrollable hero grid
+
+#### Scenario: Android two-column layout
+- **WHEN** the Android board is displayed with at least 600 dp of width but does not meet the three-column condition
+- **THEN** it uses a two-column arrangement that keeps the draft controls beside the hero grid
+
+#### Scenario: Android tablet landscape
+- **WHEN** the Android board is displayed with at least 900 dp of width and at least 600 dp of height
 - **THEN** it uses a three-column arrangement with one team panel on each side and the arena and hero grid in the center
 
 #### Scenario: Preserve functionality at every size

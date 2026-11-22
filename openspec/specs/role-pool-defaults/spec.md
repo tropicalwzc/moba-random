@@ -7,7 +7,7 @@ Defines the shared role-pool default roster and the one-time bundled-preset beha
 ## Requirements
 
 ### Requirement: Shared role-pool storage
-The iOS application SHALL use one locally stored role-pool text as the source of truth for both the grouping and BO3 modes.
+The iOS and Android applications SHALL use one locally stored role-pool text per installation as the source of truth for both the grouping and BO3 modes.
 
 #### Scenario: Edit from either mode
 - **WHEN** the user applies a valid role-pool edit in either mode
@@ -20,6 +20,10 @@ The iOS application SHALL use one locally stored role-pool text as the source of
 #### Scenario: Keep the pool outside series state
 - **WHEN** BO3 series state is saved
 - **THEN** the role-pool text is stored separately and is not cleared by a series reset
+
+#### Scenario: Edit from either Android mode
+- **WHEN** the user applies a valid role-pool edit in either Android mode
+- **THEN** the other Android mode reads the same updated text after it becomes visible
 
 ### Requirement: Default 34-character roster
 The application SHALL use the reference 34-character roster as the default role pool for fresh installations and explicit restores.
@@ -70,6 +74,14 @@ The application SHALL ship a bundled weight preset matching the 34-character def
 #### Scenario: Handle an invalid preset
 - **WHEN** the bundled preset is missing or fails validation
 - **THEN** the application does not record the marker and continues with the current valid configuration or the default pool
+
+#### Scenario: Upgrade an Android legacy default
+- **WHEN** the Android application launches without the bundled-preset marker and its stored pool is the previous 30-character default
+- **THEN** it applies the 34-character preset and records the marker
+
+#### Scenario: Preserve an Android pre-marker custom pool
+- **WHEN** the Android application launches without the bundled-preset marker and its stored pool is custom
+- **THEN** it keeps the custom pool and weights and records the migration as handled
 
 ### Requirement: Preset readiness before either mode renders
 The application SHALL complete the one-time preset migration before the grouping or BO3 tab reads the shared role pool.
