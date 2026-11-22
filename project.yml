@@ -1,6 +1,6 @@
 name: MobaRandom
 options:
-  bundleIdPrefix: com.example
+  bundleIdPrefix: com.tropicalfish
   deploymentTarget:
     iOS: "18.0"
   createIntermediateGroups: true
@@ -10,13 +10,16 @@ schemes:
       targets:
         MobaRandom: all
         MobaRandomTests: [test]
+        MobaRandomUITests: [test]
     test:
       targets:
         - MobaRandomTests
+        - MobaRandomUITests
 settings:
   base:
     SWIFT_VERSION: "6.0"
-    DEVELOPMENT_TEAM: ""
+    # Pinned so `xcodegen generate` keeps the signing team instead of clearing it.
+    DEVELOPMENT_TEAM: "39R699SCD9"
     CODE_SIGN_STYLE: Automatic
 targets:
   MobaRandom:
@@ -26,9 +29,13 @@ targets:
       - path: MobaRandom
         excludes:
           - Config/Info.plist
+          - Resources/BO3
+      - path: MobaRandom/Resources/BO3
+        type: folder
+        buildPhase: resources
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.example.MobaRandom
+        PRODUCT_BUNDLE_IDENTIFIER: com.tropicalfish.mobarandom
         PRODUCT_NAME: MobaRandom
         PRODUCT_MODULE_NAME: MobaRandom
         TARGETED_DEVICE_FAMILY: "1,2"
@@ -46,5 +53,17 @@ targets:
       - target: MobaRandom
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.example.MobaRandomTests
+        PRODUCT_BUNDLE_IDENTIFIER: com.tropicalfish.mobarandomTests
         GENERATE_INFOPLIST_FILE: true
+  MobaRandomUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - path: MobaRandomUITests
+    dependencies:
+      - target: MobaRandom
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.tropicalfish.mobarandomUITests
+        GENERATE_INFOPLIST_FILE: true
+        TEST_TARGET_NAME: MobaRandom

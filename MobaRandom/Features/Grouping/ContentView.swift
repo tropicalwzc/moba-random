@@ -47,7 +47,6 @@ struct ContentView: View {
                 .onAppear {
                     guard !hasGeneratedInitialResult else { return }
                     hasGeneratedInitialResult = true
-                    applyBuiltInWeightPresetIfNeeded()
                     if rolePoolText.isEmpty {
                         rolePoolText = GroupingEngine.defaultPoolText
                     }
@@ -408,18 +407,6 @@ struct ContentView: View {
         guard let data = try? JSONEncoder().encode(configuration),
               let encoded = String(data: data, encoding: .utf8) else { return }
         roleWeightJSON = encoded
-    }
-
-    private func applyBuiltInWeightPresetIfNeeded() {
-        let defaults = UserDefaults.standard
-        guard BuiltInWeightPresetMigration.isPending(in: defaults) else { return }
-        let currentLanes = GroupingEngine.parseRolePool(rolePoolText).map(\.name)
-        guard let imported = try? BuiltInWeightPresetMigration.load(currentLanes: currentLanes) else {
-            return
-        }
-        rolePoolText = imported.poolText
-        persistRoleWeights(imported.configuration)
-        BuiltInWeightPresetMigration.markApplied(in: defaults)
     }
 
     private static let historyKey = "moba_game_history_v1"

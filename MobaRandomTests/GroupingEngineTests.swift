@@ -2,11 +2,27 @@ import XCTest
 @testable import MobaRandom
 
 final class GroupingEngineTests: XCTestCase {
+    private let legacyWebPoolText = """
+    射手：温迪、甘雨、宵宫、提纳里、公子、夜兰
+    打野：绫华、胡桃、雷神、刻晴、牢大
+    中路：希格雯、钟离、神子、龙王、少女、纳西妲、可莉
+    战士：菲林斯、行秋、女仆、仆人、班尼特、丝柯克、点刀、魈、迪卢克、洛恩、琴、杜林
+    """
+
     func testDefaultPoolParsingPreservesOrderAndRoleCounts() {
         let categories = GroupingEngine.parseRolePool(GroupingEngine.defaultPoolText)
 
         XCTAssertEqual(categories.map(\.name), ["射手", "打野", "中路", "战士"])
-        XCTAssertEqual(categories.map(\.roles.count), [6, 5, 7, 12])
+        XCTAssertEqual(categories.map(\.roles.count), [7, 6, 8, 13])
+        XCTAssertTrue(categories[0].roles.contains("赛索斯"))
+        XCTAssertTrue(categories[1].roles.contains("魈"))
+        XCTAssertTrue(categories[2].roles.contains("琴"))
+        XCTAssertTrue(categories[2].roles.contains("八重"))
+        XCTAssertFalse(categories[2].roles.contains("神子"))
+        XCTAssertTrue(categories[3].roles.contains("杜林"))
+        XCTAssertTrue(categories[3].roles.contains("法尔加"))
+        XCTAssertTrue(categories[3].roles.contains("克洛林德"))
+        XCTAssertTrue(categories[3].roles.contains("赛诺"))
     }
 
     func testParserSupportsAllWebSeparatorsAndCustomCategories() {
@@ -29,7 +45,7 @@ final class GroupingEngineTests: XCTestCase {
 
     func testFixedSeedMatchesWeightedCrossClientAlgorithm() throws {
         let result = try GroupingEngine.generate(
-            poolText: GroupingEngine.defaultPoolText,
+            poolText: legacyWebPoolText,
             lastGameText: "温迪, 胡桃, 钟离, 行秋",
             allowDuplicate: false,
             seed: 1_700_000_000_123
@@ -39,6 +55,19 @@ final class GroupingEngineTests: XCTestCase {
         XCTAssertEqual(result.rolesB, ["公子", "胡桃", "纳西妲", "点刀"])
         XCTAssertEqual(result.playersA, [8, 2, 1, 6])
         XCTAssertEqual(result.playersB, [7, 4, 5, 3])
+    }
+
+    func testDefaultPoolProducesACompleteDeterministicAssignment() throws {
+        let result = try GroupingEngine.generate(
+            poolText: GroupingEngine.defaultPoolText,
+            lastGameText: "",
+            allowDuplicate: false,
+            seed: 1_700_000_000_123
+        )
+
+        XCTAssertEqual(result.rolesA.count, 4)
+        XCTAssertEqual(result.rolesB.count, 4)
+        XCTAssertEqual(Set(result.rolesA + result.rolesB).count, 8)
     }
 
     func testNonMirrorModeRejectsSingleRoleCategory() {
@@ -281,19 +310,34 @@ final class GroupingEngineTests: XCTestCase {
             currentLanes: ["射手", "打野", "中路", "战士"]
         )
 
-        XCTAssertEqual(imported.configuration.characters.count, 30)
-        XCTAssertEqual(
-            imported.poolText,
-            """
-            射手：温迪、甘雨、宵宫、提纳里、公子、夜兰、赛索斯
-            打野：绫华、胡桃、雷神、刻晴、牢大
-            中路：希格雯、钟离、八重、龙王、少女、纳西妲、可莉
-            战士：菲林斯、行秋、女仆、仆人、班尼特、丝柯克、点刀、魈、琴、洛恩、迪卢克
-            """
-        )
+        XCTAssertEqual(imported.configuration.characters.count, 34)
+        XCTAssertEqual(imported.poolText, GroupingEngine.defaultPoolText)
         let character = imported.configuration.characters.first { $0.character == "温迪" }
         XCTAssertEqual(character?.laneWeights, ["射手": 80, "打野": 0, "中路": 20, "战士": 0])
         XCTAssertEqual(character?.sourceLane, "射手")
+
+        let xiao = imported.configuration.characters.first { $0.character == "魈" }
+        XCTAssertEqual(xiao?.laneWeights, ["射手": 0, "打野": 100, "中路": 0, "战士": 0])
+        XCTAssertEqual(xiao?.sourceLane, "打野")
+
+        let qin = imported.configuration.characters.first { $0.character == "琴" }
+        XCTAssertEqual(qin?.laneWeights, ["射手": 0, "打野": 0, "中路": 100, "战士": 0])
+        XCTAssertEqual(qin?.sourceLane, "中路")
+
+        for name in ["杜林", "法尔加", "克洛林德", "赛诺"] {
+            let added = imported.configuration.characters.first { $0.character == name }
+            XCTAssertEqual(added?.laneWeights, ["射手": 0, "打野": 0, "中路": 0, "战士": 100])
+            XCTAssertEqual(added?.sourceLane, "战士")
+        }
+    }
+
+    func testBundledPresetAndStaticDefaultCannotDrift() throws {
+        let imported = try BuiltInWeightPresetMigration.load(
+            from: Bundle.main,
+            currentLanes: ["射手", "打野", "中路", "战士"]
+        )
+
+        XCTAssertEqual(imported.poolText, GroupingEngine.defaultPoolText)
     }
 
     func testBundledWeightPresetMigrationMarkerOnlyAllowsOneApplication() throws {

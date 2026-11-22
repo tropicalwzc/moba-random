@@ -384,10 +384,10 @@ enum GroupingError: LocalizedError, Equatable, Sendable {
 enum GroupingEngine {
     static let historyLimit = 100
     static let defaultPoolText = """
-    射手：温迪、甘雨、宵宫、提纳里、公子、夜兰
-    打野：绫华、胡桃、雷神、刻晴、牢大
-    中路：希格雯、钟离、神子、龙王、少女、纳西妲、可莉
-    战士：菲林斯、行秋、女仆、仆人、班尼特、丝柯克、点刀、魈、迪卢克、洛恩、琴、杜林
+    射手：温迪、甘雨、宵宫、提纳里、公子、夜兰、赛索斯
+    打野：绫华、胡桃、雷神、刻晴、牢大、魈
+    中路：希格雯、钟离、八重、龙王、少女、纳西妲、可莉、琴
+    战士：菲林斯、行秋、女仆、仆人、班尼特、丝柯克、点刀、洛恩、迪卢克、杜林、法尔加、克洛林德、赛诺
     """
 
     static func parseRolePool(_ text: String) -> [RoleCategory] {
