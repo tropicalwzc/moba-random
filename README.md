@@ -9,7 +9,8 @@
 2. [百度网盘链接](https://pan.baidu.com/s/5f55dPT_-QQJnCQ8_AMiHTg)
 
 ## Windows
-[下载html在浏览器运行](https://github.com/tropicalwzc/moba-random/blob/main/moba-random.html)
+[随机房版本](https://github.com/tropicalwzc/moba-random/blob/main/moba-random.html)
+[BO3征召版本](https://github.com/tropicalwzc/moba-random/blob/main/htmls/moba-bo3-draft.html)
 
 ## 功能介绍
 
