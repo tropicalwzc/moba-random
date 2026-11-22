@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_grouping"
+        android:icon="@drawable/ic_grouping"
+        android:title="@string/tab_grouping" />
+    <item
+        android:id="@+id/nav_bo3"
+        android:icon="@drawable/ic_bo3"
+        android:title="@string/tab_bo3" />
+</menu>

@@ -34,15 +34,35 @@ object RoleWeightStorage {
 
     fun applyBuiltInPresetIfNeeded(context: Context): Boolean {
         val preferences = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
-        if (preferences.getBoolean(KEY_BUILT_IN_PRESET_V2_APPLIED, false)) return false
-        val currentPool = preferences.getString(KEY_ROLE_POOL, GroupingEngine.DEFAULT_POOL_TEXT).orEmpty()
-        val currentLanes = GroupingEngine.parseRolePool(currentPool).map { it.name }
+        val storedPool = preferences.getString(KEY_ROLE_POOL, null)
+        val action = BuiltInPresetPolicy.decide(
+            storedPool = storedPool,
+            markerApplied = preferences.getBoolean(KEY_BUILT_IN_PRESET_V2_APPLIED, false),
+        )
+        when (action) {
+            BuiltInPresetAction.ALREADY_APPLIED -> return false
+            BuiltInPresetAction.PRESERVE_CUSTOM -> {
+                // The user already had a custom configuration before the marker
+                // existed. Keep both pool and weights; finish the migration once.
+                return preferences.edit()
+                    .putBoolean(KEY_BUILT_IN_PRESET_V2_APPLIED, true)
+                    .commit()
+            }
+            BuiltInPresetAction.APPLY_PRESET -> Unit
+        }
+
+        if (storedPool.isNullOrBlank()) {
+            preferences.edit().putString(KEY_ROLE_POOL, GroupingEngine.DEFAULT_POOL_TEXT).apply()
+        }
+
+        val lanes = GroupingEngine.parseRolePool(GroupingEngine.DEFAULT_POOL_TEXT).map { it.name }
         val imported = runCatching {
             val json = context.resources.openRawResource(R.raw.default_role_weights_v2)
                 .bufferedReader()
                 .use { it.readText() }
-            RoleWeightTransfer.importJson(json, currentLanes)
+            RoleWeightTransfer.importJson(json, lanes)
         }.getOrNull() ?: return false
+
         return preferences.edit()
             .putString(KEY_ROLE_POOL, imported.poolText)
             .putString(KEY_ROLE_WEIGHTS, encode(imported.configuration))

@@ -12,6 +12,7 @@
     { "character": "雷神", "laneWeights": { "中路": 0, "射手": 0, "战士": 25, "打野": 75 }, "sourceLane": "打野" },
     { "character": "刻晴", "laneWeights": { "中路": 0, "射手": 0, "战士": 20, "打野": 80 }, "sourceLane": "打野" },
     { "character": "牢大", "laneWeights": { "中路": 0, "射手": 0, "战士": 33, "打野": 67 }, "sourceLane": "打野" },
+    { "character": "魈", "laneWeights": { "中路": 0, "射手": 0, "战士": 0, "打野": 100 }, "sourceLane": "打野" },
     { "character": "希格雯", "laneWeights": { "中路": 100, "射手": 0, "战士": 0, "打野": 0 }, "sourceLane": "中路" },
     { "character": "钟离", "laneWeights": { "中路": 100, "射手": 0, "战士": 0, "打野": 0 }, "sourceLane": "中路" },
     { "character": "八重", "laneWeights": { "中路": 100, "射手": 0, "战士": 0, "打野": 0 }, "sourceLane": "中路" },
@@ -19,6 +20,7 @@
     { "character": "少女", "laneWeights": { "中路": 100, "射手": 0, "战士": 0, "打野": 0 }, "sourceLane": "中路" },
     { "character": "纳西妲", "laneWeights": { "中路": 100, "射手": 0, "战士": 0, "打野": 0 }, "sourceLane": "中路" },
     { "character": "可莉", "laneWeights": { "中路": 100, "射手": 0, "战士": 0, "打野": 0 }, "sourceLane": "中路" },
+    { "character": "琴", "laneWeights": { "中路": 100, "射手": 0, "战士": 0, "打野": 0 }, "sourceLane": "中路" },
     { "character": "菲林斯", "laneWeights": { "中路": 0, "射手": 0, "战士": 75, "打野": 25 }, "sourceLane": "战士" },
     { "character": "行秋", "laneWeights": { "中路": 0, "射手": 0, "战士": 100, "打野": 0 }, "sourceLane": "战士" },
     { "character": "女仆", "laneWeights": { "中路": 0, "射手": 0, "战士": 100, "打野": 0 }, "sourceLane": "战士" },
@@ -26,10 +28,12 @@
     { "character": "班尼特", "laneWeights": { "中路": 0, "射手": 0, "战士": 100, "打野": 0 }, "sourceLane": "战士" },
     { "character": "丝柯克", "laneWeights": { "中路": 0, "射手": 0, "战士": 100, "打野": 0 }, "sourceLane": "战士" },
     { "character": "点刀", "laneWeights": { "中路": 0, "射手": 0, "战士": 100, "打野": 0 }, "sourceLane": "战士" },
-    { "character": "魈", "laneWeights": { "中路": 0, "射手": 0, "战士": 75, "打野": 25 }, "sourceLane": "战士" },
-    { "character": "琴", "laneWeights": { "中路": 0, "射手": 0, "战士": 100, "打野": 0 }, "sourceLane": "战士" },
     { "character": "洛恩", "laneWeights": { "中路": 0, "射手": 0, "战士": 100, "打野": 0 }, "sourceLane": "战士" },
-    { "character": "迪卢克", "laneWeights": { "中路": 0, "射手": 0, "战士": 100, "打野": 0 }, "sourceLane": "战士" }
+    { "character": "迪卢克", "laneWeights": { "中路": 0, "射手": 0, "战士": 100, "打野": 0 }, "sourceLane": "战士" },
+    { "character": "杜林", "laneWeights": { "中路": 0, "射手": 0, "战士": 100, "打野": 0 }, "sourceLane": "战士" },
+    { "character": "法尔加", "laneWeights": { "中路": 0, "射手": 0, "战士": 100, "打野": 0 }, "sourceLane": "战士" },
+    { "character": "克洛林德", "laneWeights": { "中路": 0, "射手": 0, "战士": 100, "打野": 0 }, "sourceLane": "战士" },
+    { "character": "赛诺", "laneWeights": { "中路": 0, "射手": 0, "战士": 100, "打野": 0 }, "sourceLane": "战士" }
   ],
   "lanes": ["射手", "打野", "中路", "战士"],
   "version": 1

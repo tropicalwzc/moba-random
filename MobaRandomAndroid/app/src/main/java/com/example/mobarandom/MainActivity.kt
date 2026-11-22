@@ -13,14 +13,18 @@ import android.util.TypedValue
 import android.view.HapticFeedbackConstants
 import android.view.Gravity
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.GridLayout
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
 import androidx.core.widget.TextViewCompat
 import androidx.core.widget.NestedScrollView
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.Chip
@@ -36,6 +40,10 @@ import java.util.UUID
 
 class MainActivity : AppCompatActivity() {
     private lateinit var scrollView: NestedScrollView
+    private lateinit var bo3Container: FrameLayout
+    private lateinit var bottomNavigation: BottomNavigationView
+    private lateinit var bo3Store: Bo3SeriesStore
+    private var bo3Board: Bo3BoardView? = null
     private lateinit var rolePoolInput: TextInputEditText
     private lateinit var allowDuplicateSwitch: MaterialSwitch
     private lateinit var avoidPreviousSwitch: MaterialSwitch
@@ -63,6 +71,12 @@ class MainActivity : AppCompatActivity() {
     private val preferences by lazy {
         getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
     }
+    private val bo3SettingsLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult(),
+    ) {
+        syncPoolFromPreferences()
+        bo3Board?.refreshPool()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,15 +84,19 @@ class MainActivity : AppCompatActivity() {
 
         bindViews()
         RoleWeightStorage.applyBuiltInPresetIfNeeded(this)
+        bo3Store = Bo3SeriesStore(this)
         configureRolePool()
         history = loadHistory().take(GroupingEngine.HISTORY_LIMIT).toMutableList()
         configureActions()
+        configureTabs()
         renderHistory()
         generateGroups(scrollToResult = false, recordInHistory = false)
     }
 
     private fun bindViews() {
         scrollView = findViewById(R.id.mainScroll)
+        bo3Container = findViewById(R.id.bo3Container)
+        bottomNavigation = findViewById(R.id.bottomNavigation)
         rolePoolInput = findViewById(R.id.rolePoolInput)
         allowDuplicateSwitch = findViewById(R.id.allowDuplicateSwitch)
         avoidPreviousSwitch = findViewById(R.id.avoidPreviousSwitch)
@@ -98,11 +116,72 @@ class MainActivity : AppCompatActivity() {
         historyContainer = findViewById(R.id.historyContainer)
     }
 
-    override fun onResume() {
-        super.onResume()
+    private fun configureTabs() {
+        bottomNavigation.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_bo3 -> {
+                    showBo3()
+                    true
+                }
+                R.id.nav_grouping -> {
+                    showGrouping()
+                    true
+                }
+                else -> false
+            }
+        }
+        val selected = preferences.getString(KEY_SELECTED_TAB, TAB_GROUPING)
+        bottomNavigation.selectedItemId = if (selected == TAB_BO3) R.id.nav_bo3 else R.id.nav_grouping
+    }
+
+    private fun showGrouping() {
+        hideKeyboardAndFocus()
+        scrollView.visibility = View.VISIBLE
+        bo3Container.visibility = View.GONE
+        syncPoolFromPreferences()
+        preferences.edit { putString(KEY_SELECTED_TAB, TAB_GROUPING) }
+    }
+
+    private fun showBo3() {
+        hideKeyboardAndFocus()
+        val board = bo3Board ?: Bo3BoardView(
+            context = this,
+            store = bo3Store,
+            onOpenSettings = {
+                bo3SettingsLauncher.launch(Intent(this, Bo3SettingsActivity::class.java))
+            },
+        ).also {
+            bo3Board = it
+            bo3Container.addView(
+                it,
+                FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                ),
+            )
+        }
+        board.refreshPool()
+        scrollView.visibility = View.GONE
+        bo3Container.visibility = View.VISIBLE
+        preferences.edit { putString(KEY_SELECTED_TAB, TAB_BO3) }
+    }
+
+    private fun hideKeyboardAndFocus() {
+        currentFocus?.clearFocus()
+        getSystemService(InputMethodManager::class.java)
+            ?.hideSoftInputFromWindow(window.decorView.windowToken, 0)
+    }
+
+    private fun syncPoolFromPreferences() {
         if (!::rolePoolInput.isInitialized) return
         val savedPool = preferences.getString(RoleWeightStorage.KEY_ROLE_POOL, null) ?: return
         if (savedPool != rolePoolInput.text?.toString()) rolePoolInput.setText(savedPool)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        syncPoolFromPreferences()
+        bo3Board?.refreshPool()
     }
 
     private fun configureRolePool() {
@@ -435,6 +514,9 @@ class MainActivity : AppCompatActivity() {
         const val PREFERENCES_NAME = "moba_random_preferences"
         const val KEY_ROLE_POOL = RoleWeightStorage.KEY_ROLE_POOL
         const val KEY_GAME_HISTORY = "moba_game_history_v1"
+        const val KEY_SELECTED_TAB = "moba_selected_tab"
+        const val TAB_GROUPING = "grouping"
+        const val TAB_BO3 = "bo3"
     }
 }
 

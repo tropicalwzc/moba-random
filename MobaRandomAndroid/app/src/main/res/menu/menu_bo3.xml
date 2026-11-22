@@ -1,0 +1,28 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_rules"
+        android:icon="@drawable/ic_bo3_info"
+        android:title="@string/bo3_rules"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_undo"
+        android:icon="@drawable/ic_bo3_undo"
+        android:title="@string/bo3_undo"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_reset"
+        android:icon="@drawable/ic_bo3_reset"
+        android:title="@string/bo3_reset"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_history"
+        android:icon="@drawable/ic_bo3_history"
+        android:title="@string/bo3_history"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/action_settings"
+        android:icon="@drawable/ic_bo3_settings"
+        android:title="@string/bo3_settings"
+        app:showAsAction="always" />
+</menu>

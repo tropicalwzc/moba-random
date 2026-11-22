@@ -13,6 +13,12 @@
             android:name=".WeightSettingsActivity"
             android:exported="false" />
         <activity
+            android:name=".Bo3RulesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Bo3SettingsActivity"
+            android:exported="false" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>

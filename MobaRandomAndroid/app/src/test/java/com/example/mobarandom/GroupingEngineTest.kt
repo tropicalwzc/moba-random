@@ -5,12 +5,26 @@ import org.junit.Assert.assertThrows
 import org.junit.Test
 
 class GroupingEngineTest {
+    private val legacyWebPoolText = """射手：温迪、甘雨、宵宫、提纳里、公子、夜兰
+打野：绫华、胡桃、雷神、刻晴、牢大
+中路：希格雯、钟离、神子、龙王、少女、纳西妲、可莉
+战士：菲林斯、行秋、女仆、仆人、班尼特、丝柯克、点刀、魈、迪卢克、洛恩、琴、杜林"""
+
     @Test
     fun defaultPoolParsingPreservesOrderAndCounts() {
         val categories = GroupingEngine.parseRolePool(GroupingEngine.DEFAULT_POOL_TEXT)
 
         assertEquals(listOf("射手", "打野", "中路", "战士"), categories.map { it.name })
-        assertEquals(listOf(6, 5, 7, 12), categories.map { it.roles.size })
+        assertEquals(listOf(7, 6, 8, 13), categories.map { it.roles.size })
+        assert(categories[0].roles.contains("赛索斯"))
+        assert(categories[1].roles.contains("魈"))
+        assert(categories[2].roles.contains("琴"))
+        assert(categories[2].roles.contains("八重"))
+        assert(!categories[2].roles.contains("神子"))
+        assert(categories[3].roles.contains("杜林"))
+        assert(categories[3].roles.contains("法尔加"))
+        assert(categories[3].roles.contains("克洛林德"))
+        assert(categories[3].roles.contains("赛诺"))
     }
 
     @Test
@@ -27,7 +41,7 @@ class GroupingEngineTest {
     @Test
     fun fixedSeedMatchesWeightedCrossClientAlgorithm() {
         val result = GroupingEngine.generate(
-            poolText = GroupingEngine.DEFAULT_POOL_TEXT,
+            poolText = legacyWebPoolText,
             lastGameText = "温迪, 胡桃, 钟离, 行秋",
             allowDuplicate = false,
             seed = 1_700_000_000_123,
@@ -37,6 +51,27 @@ class GroupingEngineTest {
         assertEquals(listOf("公子", "胡桃", "纳西妲", "点刀"), result.rolesB)
         assertEquals(listOf(8, 2, 1, 6), result.playersA)
         assertEquals(listOf(7, 4, 5, 3), result.playersB)
+    }
+
+    @Test
+    fun default34PoolProducesACompleteDeterministicAssignment() {
+        val first = GroupingEngine.generate(
+            poolText = GroupingEngine.DEFAULT_POOL_TEXT,
+            lastGameText = "",
+            allowDuplicate = false,
+            seed = 1_700_000_000_123,
+        )
+        val second = GroupingEngine.generate(
+            poolText = GroupingEngine.DEFAULT_POOL_TEXT,
+            lastGameText = "",
+            allowDuplicate = false,
+            seed = 1_700_000_000_123,
+        )
+
+        assertEquals(4, first.rolesA.size)
+        assertEquals(4, first.rolesB.size)
+        assertEquals(8, (first.rolesA + first.rolesB).toSet().size)
+        assertEquals(first, second)
     }
 
     @Test
