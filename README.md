@@ -6,7 +6,7 @@
 ## Android
 1. [Github下载](https://github.com/tropicalwzc/moba-random/releases/download/1.3/moba-random_1.3.0.apk)
 或者
-2. [百度网盘链接](https://pan.baidu.com/s/5f55dPT_-QQJnCQ8_AMiHTg)
+2. [百度网盘链接](https://pan.baidu.com/s/1m6ygnp6dTLZsaQtgRPzWuA?pwd=ta4m) 提取码: ta4m
 
 ## Windows
 [随机房版本](https://github.com/tropicalwzc/moba-random/blob/main/moba-random.html)
