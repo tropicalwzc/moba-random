@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BO3 全局BP · 征召板</title>
+<title>MOBA 分组助手 · 随机房 &amp; BO3 全局BP</title>
 <style>
   :root{
     --bg:#05080f;
@@ -1059,6 +1059,233 @@
   @keyframes slotPulse{0%,100%{box-shadow:0 0 0 1px var(--team-soft),0 0 14px var(--team-soft)}50%{box-shadow:0 0 0 1px var(--team-line),0 0 24px var(--team-soft)}}
   @keyframes scoreBump{0%{transform:scale(1)}38%{transform:scale(1.32);color:#fff}100%{transform:scale(1)}}
 
+
+  /* ---------- Mode tabs & random room ---------- */
+  .mode-tabs{
+    display:inline-flex;align-items:center;gap:2px;padding:3px;
+    border:1px solid var(--line);border-radius:11px;
+    background:rgba(0,0,0,.28);flex-shrink:0;
+  }
+  .mode-tab{
+    height:32px;padding:0 13px;border-radius:8px;
+    font-size:12px;font-weight:750;letter-spacing:.04em;color:var(--muted);
+    transition:background .18s,color .18s;
+  }
+  .mode-tab:hover{color:#fff;background:rgba(255,255,255,.06)}
+  .mode-tab.active{color:#1c1506;background:linear-gradient(140deg,#f8e1a0,#edc265 52%,#d6a13a);box-shadow:0 2px 10px rgba(224,169,63,.18),inset 0 1px 0 rgba(255,255,255,.45)}
+  body.mode-random .topbar{position:sticky;top:0}
+  body.mode-random .scoreboard,
+  body.mode-random .top-actions{display:none}
+  body.mode-random #bo3View{display:none}
+  .random-view{display:none}
+  body.mode-random .random-view{display:block}
+  .random-view{
+    position:relative;z-index:1;
+    height:calc(100dvh - 76px);
+    overflow-y:auto;overscroll-behavior:contain;
+    max-width:1280px;margin:0 auto;padding:16px;
+  }
+  .random-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:14px}
+  .random-kicker{display:block;font-family:var(--mono);font-size:8px;letter-spacing:.2em;color:var(--gold);font-weight:800;margin-bottom:4px}
+  .random-head h2{font-size:24px;font-weight:850;letter-spacing:.02em;line-height:1.2}
+  .random-head p{font-size:11px;color:var(--muted);margin-top:4px}
+  .random-head .btn{height:38px}
+  .random-grid{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:14px;align-items:start}
+  .random-col{display:flex;flex-direction:column;gap:14px;min-width:0}
+  .panel-card{
+    background:linear-gradient(180deg,rgba(15,22,37,.94),rgba(9,14,24,.97));
+    border:1px solid var(--line);border-radius:16px;padding:16px;min-width:0;
+    box-shadow:0 12px 34px rgba(0,0,0,.18);
+  }
+  .panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px}
+  .panel-head h3{font-size:14px;font-weight:800;letter-spacing:.03em}
+  .panel-tag{font-family:var(--mono);font-size:8px;font-weight:800;letter-spacing:.12em;color:var(--dim);padding:2px 6px;border:1px solid var(--line);border-radius:5px;background:rgba(255,255,255,.025)}
+  .link-btn{font-size:10px;font-weight:700;color:var(--blue);padding:2px 0}
+  .link-btn:hover{color:#8fbcff}
+  .random-view .field > span{font-size:10px;color:var(--muted);font-weight:600;letter-spacing:.02em}
+  .random-view .field textarea{min-height:190px;font-size:12.5px;line-height:1.8}
+  .random-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:11px}
+  .random-actions .btn{height:36px;font-size:12.5px;padding:0 12px}
+  .random-check{display:flex;align-items:flex-start;gap:9px;margin-top:10px;padding:10px 11px;border:1px solid rgba(255,255,255,.08);border-radius:9px;background:rgba(255,255,255,.018);cursor:pointer}
+  .random-check input{appearance:none;width:17px;height:17px;margin-top:1px;border:1px solid var(--line-strong);border-radius:4px;background:rgba(0,0,0,.25);flex-shrink:0;position:relative;cursor:pointer}
+  .random-check input:checked{background:var(--blue);border-color:var(--blue)}
+  .random-check input:checked::after{content:"✓";position:absolute;inset:0;display:grid;place-items:center;font-size:11px;font-weight:900;color:#071226}
+  .random-check > span{display:flex;flex-direction:column;gap:3px;min-width:0}
+  .random-check b{font-size:11.5px;font-weight:700;color:#dbe7fb}
+  .random-check small{font-size:9.5px;line-height:1.55;color:#7d8ba2}
+  .random-generate{width:100%;height:40px !important;margin-top:13px;min-width:0}
+  .random-hint{font-size:9.5px;line-height:1.65;color:var(--dim);margin-top:10px}
+  .random-result-card{min-height:320px;scroll-margin-top:84px}
+  .random-seed{font-family:var(--mono);font-size:8.5px;color:var(--dim);white-space:nowrap}
+  .random-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;min-height:250px;padding:24px;border:1px dashed rgba(255,255,255,.12);border-radius:12px;background:rgba(255,255,255,.014);text-align:center}
+  .random-empty-icon{font-size:30px;filter:grayscale(.2);opacity:.8}
+  .random-empty b{font-size:13px;color:#c5d2e6}
+  .random-empty span{font-size:10px;color:var(--dim)}
+  .result-teams{display:flex;flex-direction:column;gap:11px}
+  .result-team{--team:var(--team-a);--team-soft:var(--team-a-soft);--team-line:var(--team-a-line);position:relative;overflow:hidden;border:1px solid var(--team-line);border-radius:14px;padding:13px 14px 13px 19px;background:linear-gradient(160deg,var(--team-soft),rgba(255,255,255,.012) 72%)}
+  .result-team.b{--team:var(--team-b);--team-soft:var(--team-b-soft);--team-line:var(--team-b-line)}
+  .result-team::before{content:"";position:absolute;left:7px;top:12px;bottom:12px;width:3px;border-radius:2px;background:var(--team);opacity:.9}
+  .result-team-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:3px}
+  .result-team-head .result-title{font-size:16px;font-weight:850;letter-spacing:.01em;color:var(--team)}
+  .result-side{font-family:var(--mono);font-size:8px;font-weight:750;letter-spacing:.08em;color:var(--dim);padding:2px 6px;border:1px solid var(--line);border-radius:5px;background:rgba(0,0,0,.16)}
+  .result-players{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:1px 0 10px;padding-left:1px}
+  .player-badge{width:44px;height:44px;display:grid;place-items:center;border-radius:50%;font-family:var(--mono);font-size:19px;font-weight:850;line-height:1;color:var(--team);background:rgba(0,0,0,.18);border:1px solid var(--team-line);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+  .result-roles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .result-role{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;min-width:0;min-height:50px;padding:6px 10px;border:1px solid var(--team-line);border-radius:10px;background:rgba(0,0,0,.2);text-align:left;transition:background .18s,border-color .18s,transform .18s}
+  .result-role:hover{background:var(--team-soft);border-color:var(--team)}
+  .result-role:active{transform:translateY(1px)}
+  .result-role small{font-size:8.5px;line-height:1.2;color:var(--dim);font-weight:650;letter-spacing:.05em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .result-role b{font-size:16px;line-height:1.3;color:#e9f0fb;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .result-role.swapped{border-color:var(--violet);background:rgba(167,139,250,.2)}
+  .result-role.swapped small{color:#cbb8ff}
+  .result-role.swapped b{color:#fff}
+  .swap-mark{display:inline-block;margin-right:3px;font-size:9px;color:#cbb8ff;vertical-align:1px}
+  .random-text-preview{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
+  .random-text-preview summary{cursor:pointer;font-size:9.5px;color:var(--muted);user-select:none}
+  .random-text-preview pre{margin-top:8px;padding:10px;border:1px solid var(--line);border-radius:8px;background:rgba(0,0,0,.22);color:#c6d3e7;font-family:var(--mono);font-size:10px;line-height:1.7;white-space:pre-wrap;word-break:break-word}
+  .random-view .pool-preview{margin-top:9px}
+  .random-view .pool-preview .warn{color:var(--gold)}
+  .random-view .hint{font-size:9.5px;line-height:1.65;color:var(--dim);margin-top:8px}
+
+  /* ---------- Weight settings ---------- */
+  .modal-lg{width:min(1080px,100%)}
+  #weightModal .modal{max-height:calc(100dvh - 40px)}
+  .weight-body{overscroll-behavior:contain}
+  .weight-json{border:1px solid rgba(77,141,255,.18);border-radius:10px;background:rgba(77,141,255,.04);padding:9px 10px;margin-bottom:13px}
+  .weight-json summary{cursor:pointer;font-size:10.5px;font-weight:750;color:#b9cced;letter-spacing:.02em}
+  .weight-json-body{padding-top:9px}
+  .weight-json-body .hint{font-size:9px;line-height:1.6;color:var(--dim);margin:0 0 7px}
+  .weight-json-body code{font-family:var(--mono);font-size:8.5px;color:#9cc1ff;background:rgba(77,141,255,.1);padding:1px 3px;border-radius:3px}
+  #weightJsonText{width:100%;min-height:112px;resize:vertical;border:1px solid var(--line);border-radius:8px;background:rgba(0,0,0,.28);color:#d4e1f4;padding:9px 10px;font-family:var(--mono);font-size:10px;line-height:1.65;outline:none}
+  #weightJsonText:focus{border-color:rgba(242,200,107,.4)}
+  .weight-json-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:8px}
+  .weight-json-actions .btn{height:33px;font-size:10.5px;padding:0 10px}
+  .file-btn{position:relative;overflow:hidden;display:inline-flex;align-items:center}
+  .file-btn input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
+  .weight-status{min-height:14px;margin-top:7px;font-size:9.5px;line-height:1.5;color:var(--muted)}
+  .weight-status.ok{color:var(--green)}
+  .weight-status.bad{color:#ff9ba5}
+  .weight-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:9px}
+  .weight-card{border:1px solid var(--line);border-radius:10px;padding:9px 10px;background:rgba(255,255,255,.022)}
+  .weight-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:7px}
+  .weight-head strong{font-size:11.5px;font-weight:750;color:#e2eaf6;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .weight-total{font-family:var(--mono);font-size:8.5px;font-weight:700;color:var(--gold);white-space:nowrap}
+  .weight-total.complete{color:var(--green)}
+  .weight-total.invalid{color:#ff9ba5}
+  .weight-lane-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(58px,1fr));gap:5px}
+  .weight-lane{display:flex;flex-direction:column;gap:3px;min-width:0}
+  .weight-lane span{font-size:7.5px;color:var(--dim);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .weight-input{width:100%;height:30px;border:1px solid var(--line);border-radius:6px;background:rgba(0,0,0,.26);color:#e5eefb;text-align:center;font-family:var(--mono);font-size:11px;outline:none;padding:0 3px}
+  .weight-input:focus{border-color:rgba(242,200,107,.45);background:rgba(0,0,0,.36)}
+  .weight-footer-note{margin-top:11px;font-size:8.5px;line-height:1.6;color:var(--dim)}
+
+  @media (max-width:1100px){
+    .random-grid{grid-template-columns:1fr}
+    .random-result-card{min-height:0}
+    .weight-list{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+  }
+  @media (max-width:960px){
+    .random-view{height:auto;min-height:calc(100dvh - 110px);padding:12px 14px 28px}
+  }
+  @media (max-width:680px){
+    .random-head{flex-direction:column;align-items:flex-start;gap:8px}
+    .random-head .btn{width:100%}
+    .result-teams{grid-template-columns:1fr}
+    .weight-list{grid-template-columns:1fr}
+    .weight-json-actions .btn{flex:1}
+  }
+
+
+  /* ---------- History ---------- */
+  .history-btn{display:inline-flex;align-items:center;gap:6px}
+  .history-count{min-width:17px;height:17px;padding:0 4px;border-radius:99px;display:inline-grid;place-items:center;font-family:var(--mono);font-size:8px;font-weight:800;line-height:1;color:#061225;background:var(--gold)}
+  .history-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+  .history-filters{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+  .history-filter{height:30px;padding:0 9px;border:1px solid var(--line);border-radius:7px;background:rgba(255,255,255,.025);color:var(--muted);font-size:10.5px;font-weight:700;display:inline-flex;align-items:center;gap:5px}
+  .history-filter:hover{color:#fff;background:rgba(255,255,255,.06)}
+  .history-filter.active{color:#1c1506;background:linear-gradient(140deg,#f8e1a0,#edc265 52%,#d6a13a);border-color:transparent}
+  .history-filter span{font-family:var(--mono);font-size:8px;font-weight:800;opacity:.7}
+  .history-clear{height:31px;font-size:10.5px;padding:0 10px}
+  .history-clear:disabled{opacity:.3}
+  .history-list{display:flex;flex-direction:column;gap:9px;min-height:160px}
+  .history-card{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:rgba(255,255,255,.022)}
+  .history-card-head{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:8px}
+  .history-type{font-family:var(--mono);font-size:8px;font-weight:800;letter-spacing:.1em;padding:2px 6px;border-radius:4px;border:1px solid var(--line);color:var(--muted);background:rgba(255,255,255,.03)}
+  .history-type.random{color:#9cc1ff;border-color:rgba(77,141,255,.3);background:rgba(77,141,255,.1)}
+  .history-type.bo3{color:#f3d79b;border-color:rgba(242,200,107,.3);background:rgba(242,200,107,.09)}
+  .history-time{font-family:var(--mono);font-size:8.5px;color:var(--dim);white-space:nowrap}
+  .history-seed{font-family:var(--mono);font-size:8px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .history-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+  .history-tag{font-size:8px;color:#9aa8bd;padding:2px 5px;border:1px solid var(--line);border-radius:4px;background:rgba(255,255,255,.025);white-space:nowrap}
+  .history-teams{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+  .history-team{--team:var(--team-a);--team-soft:var(--team-a-soft);--team-line:var(--team-a-line);border:1px solid var(--line);border-radius:8px;padding:7px 8px;background:rgba(0,0,0,.16)}
+  .history-team.b{--team:var(--team-b);--team-soft:var(--team-b-soft);--team-line:var(--team-b-line)}
+  .history-team-title{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:10px;font-weight:750;color:var(--team);min-width:0}
+  .history-players{font-family:var(--mono);font-size:8px;color:#aebbd0;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .history-roles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;margin-top:6px}
+  .history-role{display:flex;flex-direction:column;gap:1px;min-width:0;padding:4px 5px;border:1px solid var(--team-line);border-radius:6px;background:rgba(0,0,0,.16)}
+  .history-role small{font-size:7px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.2}
+  .history-role b{font-size:10px;color:#e4edf9;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
+  .history-role.swapped{border-color:var(--violet);background:rgba(167,139,250,.18)}
+  .history-role.swapped b{color:#fff}
+  .history-bo3-result{font-size:11.5px;font-weight:750;color:#dce6f5;margin-left:auto;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+  .history-champion{font-size:12px;font-weight:800;color:var(--gold);margin:1px 0 7px}
+  .history-champion.partial{color:#c7a56a;font-size:11px}
+  .history-status{color:#f3d79b;border-color:rgba(242,200,107,.28);background:rgba(242,200,107,.08)}
+  .history-game-results{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:7px}
+  .history-game-chip{font-family:var(--mono);font-size:8px;font-weight:750;padding:2px 5px;border-radius:4px;border:1px solid var(--line);color:var(--muted);background:rgba(255,255,255,.025)}
+  .history-game-chip.a{color:var(--team-a);border-color:rgba(255,95,112,.28);background:rgba(255,95,112,.08)}
+  .history-game-chip.b{color:var(--team-b);border-color:rgba(177,140,255,.28);background:rgba(177,140,255,.08)}
+  .history-games{border-top:1px solid var(--line);padding-top:6px;margin-top:2px}
+  .history-games summary{cursor:pointer;font-size:9px;color:var(--muted);user-select:none}
+  .history-game{margin-top:7px;padding:6px 7px;border:1px solid var(--line);border-radius:7px;background:rgba(0,0,0,.14)}
+  .history-game-title{font-size:9px;font-weight:750;color:#c5d2e6;margin-bottom:4px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+  .history-game-title span{font-family:var(--mono);font-size:7.5px;color:var(--dim);font-weight:700}
+  .history-line{display:flex;align-items:baseline;gap:5px;flex-wrap:wrap;font-size:8.5px;color:#a8b5c9;line-height:1.6}
+  .history-line b{font-size:8px;font-weight:800;color:var(--team-a);min-width:18px}
+  .history-line b.b{color:var(--team-b)}
+  .history-line span{min-width:0;overflow-wrap:anywhere}
+  .history-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:180px;border:1px dashed rgba(255,255,255,.12);border-radius:12px;background:rgba(255,255,255,.014);text-align:center;color:var(--dim);font-size:10px}
+  .history-empty b{font-size:12px;color:#c5d2e6}
+  @media (max-width:680px){
+    .history-teams{grid-template-columns:1fr}
+    .history-toolbar{align-items:flex-start}
+    .history-bo3-result{margin-left:0}
+  }
+
+
+  .history-view-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:7px}
+  .history-view-tabs{display:inline-flex;gap:2px;padding:3px;border:1px solid var(--line);border-radius:9px;background:rgba(0,0,0,.22)}
+  .history-view-tab{height:28px;padding:0 11px;border-radius:6px;font-size:10.5px;font-weight:750;color:var(--muted)}
+  .history-view-tab:hover{color:#fff;background:rgba(255,255,255,.05)}
+  .history-view-tab.active{color:#1c1506;background:linear-gradient(140deg,#f8e1a0,#edc265 52%,#d6a13a)}
+  .history-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .history-action{height:31px;font-size:10.5px;padding:0 10px}
+  .history-format-hint{font-size:8.5px;color:var(--dim);line-height:1.6;margin-bottom:10px}
+  .history-stats-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+  .history-stats-summary{font-size:9px;color:var(--muted);font-family:var(--mono);white-space:nowrap}
+  .history-stats-hint{font-size:8.5px;line-height:1.6;color:var(--dim);margin-bottom:9px}
+  .history-stats-table{overflow-x:auto}
+  .history-stats-inner{min-width:390px}
+  .history-stats-head,.history-stat-row{display:grid;grid-template-columns:minmax(76px,1.3fr) 52px 52px 62px 48px 76px;align-items:center;gap:5px}
+  .history-stats-head{padding:0 8px 6px;font-size:8px;color:var(--dim);font-weight:750;letter-spacing:.04em;border-bottom:1px solid var(--line)}
+  .history-stat-row{padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.045);font-size:10px}
+  .history-stat-row:hover{background:rgba(255,255,255,.03)}
+  .history-stat-hero{font-weight:750;color:#e4edf9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .history-stat-num{font-family:var(--mono);font-size:10px;color:#c1cee0;text-align:center}
+  .history-stat-rate{font-family:var(--mono);font-size:10px;font-weight:750;text-align:center}
+  .history-stat-rate.win{color:var(--green)}
+  .history-stat-rate.ban{color:var(--gold)}
+  .history-stat-rate.loss{color:#ff9ba5}
+  .history-stat-rate.na{color:var(--dim);font-weight:600}
+  @media (max-width:680px){
+    .history-view-bar{align-items:flex-start}
+    .history-actions{width:100%}
+    .history-action{flex:1}
+    .history-stats-head,.history-stat-row{grid-template-columns:minmax(70px,1.3fr) 44px 44px 54px 42px 68px}
+    .history-format-hint{font-size:8px}
+  }
+
   /* ---------- Responsive ---------- */
   @media (max-width:1320px){
     .layout{grid-template-columns:225px minmax(0,1fr) 225px}
@@ -1134,15 +1361,26 @@
 </style>
 </head>
 <body>
+<script>
+  try { document.body.classList.add(localStorage.getItem("moba_active_mode") === "random" ? "mode-random" : "mode-bo3"); }
+  catch (e) { document.body.classList.add("mode-bo3"); }
+</script>
 
 <header class="topbar">
   <div class="brand">
-    <div class="brand-mark">BO<span>3</span></div>
+    <div class="brand-mark">MOBA</div>
     <div class="brand-copy">
-      <strong>峡谷征召</strong>
-      <span>GLOBAL DRAFT BOARD</span>
+      <strong>分组助手</strong>
+      <span>RANDOM ROOM · BO3 DRAFT</span>
     </div>
   </div>
+
+  <nav class="mode-tabs" id="modeTabs" role="tablist" aria-label="模式切换">
+    <button class="mode-tab active" id="modeBo3Tab" role="tab" aria-selected="true" data-mode="bo3" title="BO3 全局 BP 征召">BO3</button>
+    <button class="mode-tab" id="modeRandomTab" role="tab" aria-selected="false" data-mode="random" title="传统随机房分组">随机</button>
+  </nav>
+
+  <button class="btn ghost history-btn" id="historyBtn" title="查看随机房与 BO3 历史">历史<span class="history-count hidden" id="historyCount"></span></button>
 
   <div class="scoreboard" id="scoreboard" aria-label="比分"></div>
 
@@ -1155,7 +1393,7 @@
   </div>
 </header>
 
-<main class="layout">
+<main class="layout" id="bo3View">
   <aside class="team-panel team-a" id="teamA" aria-label="A 队征召面板"></aside>
 
   <section class="arena">
@@ -1194,7 +1432,7 @@
           <span><i class="a"></i>A 队</span>
           <span><i class="b"></i>B 队</span>
           <span><i class="lock"></i>前序对局已选角色锁定</span>
-          <a class="pool-credit" href="https://baike.mihoyo.com/ys/obc/channel/map/189/25?bbs_presentation_style=no_header&amp;visit_device=pc" target="_blank" rel="noreferrer">头像：原神观测枢</a>
+          <span class="pool-credit">头像来源：原神观测枢</span>
         </div>
         <div class="pool-stats" id="poolStats"></div>
       </div>
@@ -1202,6 +1440,86 @@
   </section>
 
   <aside class="team-panel team-b" id="teamB" aria-label="B 队征召面板"></aside>
+</main>
+
+<main class="random-view" id="randomView" aria-label="传统随机房">
+  <div class="random-head">
+    <div>
+      <span class="random-kicker">RANDOM ROOM</span>
+      <h2>传统随机房</h2>
+      <p>动态角色池 · 分路权重 · 智能避让上一局</p>
+    </div>
+    <button class="btn ghost" id="randomWeightsBtn" title="设置每个角色的分路权重，或导入权重 JSON">分路权重</button>
+  </div>
+
+  <div class="random-grid">
+    <div class="random-col">
+      <section class="panel-card">
+        <div class="panel-head">
+          <h3>角色池</h3>
+          <button class="link-btn" id="randomResetPoolBtn">恢复默认</button>
+        </div>
+        <label class="field">
+          <span>每行一个分类，格式：分类：角色1、角色2</span>
+          <textarea id="randomPoolTextarea" spellcheck="false" aria-label="随机模式角色池"></textarea>
+        </label>
+        <div class="pool-preview" id="randomPoolPreview"></div>
+        <div class="random-actions">
+          <button class="btn ghost" id="randomApplyPoolBtn">应用角色池</button>
+        </div>
+        <p class="random-hint">角色池与 BO3 征召板共享。支持顿号、逗号或空格分隔；重复角色只保留第一次出现。</p>
+      </section>
+
+      <section class="panel-card">
+        <div class="panel-head">
+          <h3>分组规则</h3>
+          <span class="panel-tag">RANDOM</span>
+        </div>
+        <label class="random-check">
+          <input type="checkbox" id="randomAllowDuplicate">
+          <span>
+            <b>允许两组使用相同角色</b>
+            <small>镜像模式：同一角色可在 A/B 队各出现一次，同一队内仍不会重复。</small>
+          </span>
+        </label>
+        <label class="random-check">
+          <input type="checkbox" id="randomAvoidPrevious">
+          <span>
+            <b>降低上一轮角色的抽中概率</b>
+            <small>开启后自动识别上一轮结果，并将这些角色的有效权重降至 1/10。</small>
+          </span>
+        </label>
+        <button class="btn primary random-generate" id="randomGenerateBtn">开始随机分组</button>
+        <p class="random-hint">默认模式保证整场结果不重复；点按结果中的角色可按当前分路权重随机更换。</p>
+      </section>
+    </div>
+
+    <div class="random-col">
+      <section class="panel-card random-result-card" id="randomResultCard">
+        <div class="panel-head">
+          <h3>分组结果</h3>
+          <span class="random-seed" id="randomSeed"></span>
+        </div>
+        <div class="random-empty" id="randomEmpty">
+          <div class="random-empty-icon">🎲</div>
+          <b>还没有分组结果</b>
+          <span>点击「开始随机分组」生成 A/B 两队。</span>
+        </div>
+        <div class="random-result hidden" id="randomResult">
+          <div class="result-teams" id="randomTeams"></div>
+          <p class="random-hint">点按任意角色，可在同一分路的其他角色中按权重随机更换；紫色表示本局已更换。</p>
+          <details class="random-text-preview">
+            <summary>查看文本结果</summary>
+            <pre id="randomOutput"></pre>
+          </details>
+          <div class="random-actions">
+            <button class="btn ghost" id="randomCopyBtn">复制结果</button>
+            <button class="btn ghost" id="randomRegenerateBtn">再抽一次</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
 </main>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -1362,13 +1680,106 @@
       <button class="modal-close" data-close="confirmModal" aria-label="关闭">×</button>
     </div>
     <div class="modal-body">
-      <p class="confirm-text">比分、三局征召记录和当前进度都会被清除，回到第 1 局开始前。<b>角色池、队伍名称与赛制设置会保留。</b></p>
+      <p class="confirm-text">比分、三局征召记录和当前进度都会被清除，回到第 1 局开始前。<b>已完成的局会写入历史记录</b>；角色池、队伍名称与赛制设置会保留。</p>
       <p class="confirm-warn">如果只是误选了一个角色，请使用「撤销」，不必重置全部。</p>
     </div>
     <div class="modal-foot">
       <div class="spacer"></div>
       <button class="btn ghost" data-close="confirmModal">取消</button>
       <button class="btn danger-solid" id="confirmResetBtn">全部清空</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- 分路权重 / JSON -->
+<div class="modal-backdrop" id="weightModal" aria-hidden="true">
+  <div class="modal modal-lg" role="dialog" aria-modal="true" aria-labelledby="weightTitle">
+    <div class="modal-head">
+      <div>
+        <h3 id="weightTitle">分路权重</h3>
+        <p>每个角色的整数权重合计必须为 100；超过 100 时按当前比例自动换算。JSON 导入会同时更新共享角色池。</p>
+      </div>
+      <button class="modal-close" id="weightCloseBtn" aria-label="关闭">×</button>
+    </div>
+    <div class="modal-body weight-body">
+      <details class="weight-json" id="weightJsonPanel">
+        <summary>权重 JSON 导入 / 导出</summary>
+        <div class="weight-json-body">
+          <p class="hint">支持 iOS 导出的 <code>{ version, lanes, characters }</code> 格式，也兼容没有 <code>lanes</code> 的旧格式。导入后角色池会按每个角色的最高权重分路重建。</p>
+          <textarea id="weightJsonText" spellcheck="false" placeholder='{"version":1,"lanes":["射手","打野","中路","战士"],"characters":[{"character":"温迪","laneWeights":{"射手":80,"打野":0,"中路":20,"战士":0}}]}'></textarea>
+          <div class="weight-json-actions">
+            <button class="btn ghost" id="weightImportBtn">导入 JSON</button>
+            <button class="btn ghost" id="weightExportBtn">导出当前权重</button>
+            <label class="btn ghost file-btn">选择文件<input type="file" id="weightJsonFile" accept=".json,application/json"></label>
+          </div>
+          <div class="weight-status" id="weightJsonStatus"></div>
+        </div>
+      </details>
+      <div class="weight-list" id="weightList"></div>
+      <p class="weight-footer-note">提示：提交某个输入框后若总和超过 100，会按整行当前比例自动换算；不足 100 的行需要手动补足。</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn ghost" id="weightCancelBtn">取消</button>
+      <div class="spacer"></div>
+      <button class="btn ghost" id="weightResetBtn">按角色池重置</button>
+      <button class="btn primary" id="weightSaveBtn">保存权重</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- 历史记录 -->
+<div class="modal-backdrop" id="historyModal" aria-hidden="true">
+  <div class="modal modal-lg" role="dialog" aria-modal="true" aria-labelledby="historyTitle">
+    <div class="modal-head">
+      <div>
+        <h3 id="historyTitle">历史记录</h3>
+        <p>随机房分组与 BO3 系列赛的本地记录，最新在前。</p>
+      </div>
+      <button class="modal-close" data-close="historyModal" aria-label="关闭">×</button>
+    </div>
+    <div class="modal-body">
+      <div class="history-view-bar">
+        <div class="history-view-tabs" id="historyViewTabs" role="tablist" aria-label="历史视图">
+          <button class="history-view-tab active" data-history-view="records" role="tab" aria-selected="true">记录</button>
+          <button class="history-view-tab" data-history-view="stats" role="tab" aria-selected="false">角色统计</button>
+        </div>
+        <div class="history-actions">
+          <button class="btn ghost history-action" id="historyExportBtn" title="导出全部历史记录为 JSON 文件">导出 JSON</button>
+          <label class="btn ghost history-action file-btn" title="导入 JSON 历史文件（按记录 id 合并）">导入 JSON<input type="file" id="historyImportFile" accept=".json,application/json"></label>
+        </div>
+      </div>
+      <p class="history-format-hint">文件格式：moba-random.history / version 1；导入按记录 id 合并，冲突时保留较新记录，最多保留 100 条。</p>
+
+      <div id="historyRecordsView">
+        <div class="history-toolbar">
+          <div class="history-filters" id="historyFilters" role="tablist" aria-label="历史类型">
+            <button class="history-filter active" data-history-filter="all" role="tab" aria-selected="true">全部 <span id="historyAllCount">0</span></button>
+            <button class="history-filter" data-history-filter="random" role="tab" aria-selected="false">随机房 <span id="historyRandomCount">0</span></button>
+            <button class="history-filter" data-history-filter="bo3" role="tab" aria-selected="false">BO3 <span id="historyBo3Count">0</span></button>
+          </div>
+          <button class="btn ghost history-clear" id="historyClearBtn">清空</button>
+        </div>
+        <div class="history-list" id="historyList"></div>
+      </div>
+
+      <div id="historyStatsView" class="hidden">
+        <div class="history-stats-toolbar">
+          <div class="history-filters" id="historyStatsFilters" role="tablist" aria-label="统计范围">
+            <button class="history-filter active" data-history-stats="all" role="tab" aria-selected="true">全部 BO3</button>
+            <button class="history-filter" data-history-stats="completed" role="tab" aria-selected="false">完整 BO3</button>
+            <button class="history-filter" data-history-stats="partial" role="tab" aria-selected="false">BO1 / 提前重置</button>
+          </div>
+          <span class="history-stats-summary" id="historyStatsSummary"></span>
+        </div>
+        <p class="history-stats-hint">胜率 = 选用局胜场 / 选用局数；被 BAN 率 = 被 BAN 局数 / 统计对局数。仅统计有胜者的对局；随机房记录不计入；表格只列出出现过选用或 BAN 的角色。</p>
+        <div class="history-stats-table" id="historyStatsTable"></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <div class="spacer"></div>
+      <button class="btn ghost" data-close="historyModal">关闭</button>
     </div>
   </div>
 </div>
@@ -1472,7 +1883,54 @@
     settingsError: $("#settingsError"),
     applySettingsBtn: $("#applySettingsBtn"),
     resetPoolBtn: $("#resetPoolBtn"),
-    confirmResetBtn: $("#confirmResetBtn")
+    confirmResetBtn: $("#confirmResetBtn"),
+    modeTabs: $("#modeTabs"),
+    randomView: $("#randomView"),
+    randomPoolTextarea: $("#randomPoolTextarea"),
+    randomPoolPreview: $("#randomPoolPreview"),
+    randomApplyPoolBtn: $("#randomApplyPoolBtn"),
+    randomResetPoolBtn: $("#randomResetPoolBtn"),
+    randomWeightsBtn: $("#randomWeightsBtn"),
+    randomAllowDuplicate: $("#randomAllowDuplicate"),
+    randomAvoidPrevious: $("#randomAvoidPrevious"),
+    randomGenerateBtn: $("#randomGenerateBtn"),
+    randomResultCard: $("#randomResultCard"),
+    randomEmpty: $("#randomEmpty"),
+    randomResult: $("#randomResult"),
+    randomSeed: $("#randomSeed"),
+    randomTeams: $("#randomTeams"),
+    randomOutput: $("#randomOutput"),
+    randomCopyBtn: $("#randomCopyBtn"),
+    randomRegenerateBtn: $("#randomRegenerateBtn"),
+    weightModal: $("#weightModal"),
+    weightList: $("#weightList"),
+    weightJsonPanel: $("#weightJsonPanel"),
+    weightJsonText: $("#weightJsonText"),
+    weightJsonStatus: $("#weightJsonStatus"),
+    weightImportBtn: $("#weightImportBtn"),
+    weightExportBtn: $("#weightExportBtn"),
+    weightJsonFile: $("#weightJsonFile"),
+    weightSaveBtn: $("#weightSaveBtn"),
+    weightCancelBtn: $("#weightCancelBtn"),
+    weightResetBtn: $("#weightResetBtn"),
+    weightCloseBtn: $("#weightCloseBtn"),
+    historyBtn: $("#historyBtn"),
+    historyCount: $("#historyCount"),
+    historyModal: $("#historyModal"),
+    historyList: $("#historyList"),
+    historyFilters: $("#historyFilters"),
+    historyAllCount: $("#historyAllCount"),
+    historyRandomCount: $("#historyRandomCount"),
+    historyBo3Count: $("#historyBo3Count"),
+    historyClearBtn: $("#historyClearBtn"),
+    historyViewTabs: $("#historyViewTabs"),
+    historyRecordsView: $("#historyRecordsView"),
+    historyStatsView: $("#historyStatsView"),
+    historyStatsFilters: $("#historyStatsFilters"),
+    historyStatsSummary: $("#historyStatsSummary"),
+    historyStatsTable: $("#historyStatsTable"),
+    historyExportBtn: $("#historyExportBtn"),
+    historyImportFile: $("#historyImportFile")
   };
 
   var toastTimer = null;
@@ -1487,6 +1945,7 @@
   function createInitialState(){
     return {
       poolText: DEFAULT_POOL_TEXT,
+      seriesId: null,
       teamNames: { A:"A 队", B:"B 队" },
       settings: { noBanGame3:true },
       seats: null,
@@ -1513,6 +1972,8 @@
     var saved;
     try { saved = JSON.parse(raw); } catch(e){ return base; }
     if(!saved || saved.v !== 1) return base;
+
+    if(typeof saved.seriesId === "string" && saved.seriesId) base.seriesId = saved.seriesId;
 
     if(typeof saved.poolText === "string" && saved.poolText.trim()){
       base.poolText = saved.poolText;
@@ -1601,6 +2062,7 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         v:1,
         poolText: state.poolText,
+        seriesId: state.seriesId,
         teamNames: state.teamNames,
         settings: state.settings,
         seats: state.seats,
@@ -2518,6 +2980,7 @@
     }
 
     if(state.currentGame === 0){
+      state.seriesId = newHistoryId();
       state.seats = generateSeats();
       state.currentGame = 1;
       state.games[0].started = true;
@@ -2615,6 +3078,7 @@
     renderAll();
     var wins = seriesWins();
     if(seriesOver()){
+      recordBo3History(true);
       toast(teamName(team) + " 赢得 BO3 系列赛 · 比分 " + wins.A + " : " + wins.B, "success", 3800);
     } else {
       toast(teamName(team) + " 拿下第 " + state.currentGame + " 局 · 比分 " + wins.A + " : " + wins.B, "success", 2800);
@@ -2651,7 +3115,9 @@
   }
 
   function resetAll(){
+    var partialRecorded = recordPartialBo3History();
     state.currentGame = 0;
+    state.seriesId = null;
     state.seats = null;
     state.games = [createGame(),createGame(),createGame()];
     state.ui.role = "all";
@@ -2660,7 +3126,11 @@
     els.search.value = "";
     lastScore = { A:0, B:0 };
     renderAll();
-    toast("已清空全部对局，角色池、队伍名称与赛制设置已保留", "success", 3000);
+    toast(
+      "已清空全部对局" + (partialRecorded ? "，已完成的对局已记入历史" : "") + "，角色池、队伍名称与赛制设置已保留",
+      "success",
+      partialRecorded ? 3600 : 3000
+    );
   }
 
   function openSettings(){
@@ -2736,6 +3206,7 @@
     var game3Started = !!state.games[2].started;
     var minNeeded = nextNoBanG3 ? 24 : 28;
 
+    var previousPoolLanes = parseGroupingCategories(state.poolText).map(function(category){ return category.name; }).join("|");
     state.poolText = els.poolTextarea.value;
     state.teamNames = { A:nameA, B:nameB };
     state.settings.noBanGame3 = nextNoBanG3;
@@ -2743,6 +3214,7 @@
 
     closeModal(els.settingsModal);
     renderAll();
+    onSharedPoolChanged(previousPoolLanes);
 
     var extra = parsed.duplicates.length ? "（忽略 " + parsed.duplicates.length + " 个重复项）" : "";
     var shortage = parsed.total < minNeeded ? " · 建议为当前赛制准备至少 " + minNeeded + " 名角色" : "";
@@ -2754,6 +3226,1435 @@
     if(els.resetBtn.disabled) return;
     openModal(els.confirmModal);
   }
+
+
+  /* ---------- Random room: shared pool, weights and grouping ---------- */
+
+  var WEIGHT_VERSION = 1;
+  var WEIGHT_KEY = "moba_role_weights_v1";
+  var ACTIVE_MODE_KEY = "moba_active_mode";
+  var activeMode = "bo3";
+  var weightCategories = [];
+  var weightDraft = null;
+  var randomResult = null;
+  var randomPreviousRolesText = "";
+  var randomResultCategories = [];
+  var randomSwappedSlots = new Set();
+
+  function parseGroupingCategories(text){
+    var categories = [];
+    var index = new Map();
+    String(text || "").split(/\r?\n/).forEach(function(raw){
+      var line = raw.trim();
+      if(!line || line.charAt(0) === "#" || line.indexOf("//") === 0) return;
+      var colon = line.search(/[:：]/);
+      if(colon <= 0) return;
+      var name = line.slice(0, colon).trim();
+      if(!name) return;
+      var values = line.slice(colon + 1).trim();
+      var roles = values.split(/[、,，;；\/|\s]+/).map(function(role){ return role.trim(); }).filter(Boolean);
+      if(index.has(name)){
+        categories[index.get(name)] = { name:name, roles:roles };
+      } else {
+        index.set(name, categories.length);
+        categories.push({ name:name, roles:roles });
+      }
+    });
+    return categories;
+  }
+
+  function normalizeWeightValues(values){
+    if(!Array.isArray(values) || !values.every(function(value){ return Number.isInteger(value) && value >= 0; })) return null;
+    var total = values.reduce(function(sum, value){ return sum + value; }, 0);
+    if(total <= 100) return values.slice();
+    var exact = values.map(function(value){ return value * 100 / total; });
+    var result = exact.map(Math.floor);
+    var order = exact.map(function(value, index){ return { index:index, remainder:value - Math.floor(value) }; })
+      .sort(function(a, b){ return b.remainder - a.remainder || a.index - b.index; });
+    var remaining = 100 - result.reduce(function(sum, value){ return sum + value; }, 0);
+    for(var cursor = 0; remaining > 0 && order.length; cursor = (cursor + 1) % order.length, remaining--){
+      result[order[cursor].index]++;
+    }
+    return result;
+  }
+
+  function reconcileWeightConfig(categories, saved){
+    var lanes = categories.map(function(category){ return category.name; });
+    var laneSet = new Set(lanes);
+    var order = [];
+    var defaultLane = new Map();
+    categories.forEach(function(category){
+      category.roles.forEach(function(character){
+        if(!defaultLane.has(character)){
+          defaultLane.set(character, category.name);
+          order.push(character);
+        }
+      });
+    });
+
+    var savedByName = new Map();
+    if(saved && saved.version === WEIGHT_VERSION && Array.isArray(saved.characters)){
+      saved.characters.forEach(function(entry){
+        if(entry && typeof entry.character === "string" && !savedByName.has(entry.character)){
+          savedByName.set(entry.character, entry);
+        }
+      });
+    }
+
+    var characters = order.map(function(character){
+      var fallbackLane = defaultLane.get(character);
+      var fallback = {};
+      lanes.forEach(function(lane){ fallback[lane] = lane === fallbackLane ? 100 : 0; });
+      var old = savedByName.get(character);
+      if(!old || !old.laneWeights || typeof old.laneWeights !== "object" || Array.isArray(old.laneWeights)){
+        return { character:character, sourceLane:fallbackLane, laneWeights:fallback };
+      }
+      var invalid = Object.keys(old.laneWeights).some(function(lane){
+        var value = old.laneWeights[lane];
+        return !Number.isInteger(value) || value < 0;
+      });
+      if(invalid) return { character:character, sourceLane:fallbackLane, laneWeights:fallback };
+      if(old.sourceLane != null && old.sourceLane !== fallbackLane){
+        return { character:character, sourceLane:fallbackLane, laneWeights:fallback };
+      }
+      var laneWeights = {};
+      lanes.forEach(function(lane){ laneWeights[lane] = old.laneWeights[lane] || 0; });
+      var removed = Object.keys(old.laneWeights).reduce(function(sum, lane){
+        return sum + (laneSet.has(lane) ? 0 : old.laneWeights[lane]);
+      }, 0);
+      laneWeights[fallbackLane] = (laneWeights[fallbackLane] || 0) + removed;
+      var total = lanes.reduce(function(sum, lane){ return sum + laneWeights[lane]; }, 0);
+      if(total !== 100) return { character:character, sourceLane:fallbackLane, laneWeights:fallback };
+      return { character:character, sourceLane:fallbackLane, laneWeights:laneWeights };
+    });
+    return { version:WEIGHT_VERSION, characters:characters };
+  }
+
+  function readWeightConfig(poolText){
+    var saved = null;
+    try { saved = JSON.parse(localStorage.getItem(WEIGHT_KEY)); } catch(e){ saved = null; }
+    var configuration = reconcileWeightConfig(parseGroupingCategories(poolText), saved);
+    try { localStorage.setItem(WEIGHT_KEY, JSON.stringify(configuration)); } catch(e){}
+    return configuration;
+  }
+
+  function saveWeightConfig(configuration){
+    try { localStorage.setItem(WEIGHT_KEY, JSON.stringify(configuration)); } catch(e){}
+  }
+
+  function cloneWeightConfig(configuration){
+    return JSON.parse(JSON.stringify(configuration));
+  }
+
+  function randomMulberry32(seed){
+    var state = seed >>> 0;
+    return function(){
+      var value = state = (state + 0x6D2B79F5) >>> 0;
+      value = Math.imul(value ^ value >>> 15, value | 1);
+      value ^= value + Math.imul(value ^ value >>> 7, value | 61);
+      return ((value ^ value >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  function previousRoleSet(text){
+    return new Set(String(text || "").match(/[\u4e00-\u9fa5a-zA-Z]+/g) || []);
+  }
+
+  function previousRolesTextFromResult(result){
+    return result ? result.rolesA.concat(result.rolesB).join("，") : "";
+  }
+
+  function configuredWeight(configuration, character, lane){
+    var entry = configuration.characters.find(function(item){ return item.character === character; });
+    return entry && entry.laneWeights[lane] ? entry.laneWeights[lane] : 0;
+  }
+
+  function effectiveWeight(configuration, character, lane, previousRoles){
+    return configuredWeight(configuration, character, lane) / 100 * (previousRoles.has(character) ? 0.1 : 1);
+  }
+
+  function groupingPickWeighted(characters, lane, configuration, previousRoles, rng){
+    var weighted = characters.map(function(character){
+      return { character:character, weight:effectiveWeight(configuration, character, lane, previousRoles) };
+    }).filter(function(item){ return item.weight > 0; });
+    if(!weighted.length) return null;
+    var randomWeight = rng() * weighted.reduce(function(sum, item){ return sum + item.weight; }, 0);
+    for(var i=0;i<weighted.length;i++){
+      randomWeight -= weighted[i].weight;
+      if(randomWeight <= 0) return weighted[i].character;
+    }
+    return weighted[weighted.length - 1].character;
+  }
+
+  function groupingWeightedOrder(characters, lane, configuration, previousRoles, rng){
+    var remaining = characters.slice();
+    var result = [];
+    while(remaining.length){
+      var next = groupingPickWeighted(remaining, lane, configuration, previousRoles, rng);
+      if(!next) break;
+      result.push(next);
+      remaining.splice(remaining.indexOf(next), 1);
+    }
+    return result;
+  }
+
+  function groupingAssign(slots, categories, configuration, previousRoles, rng, used, assignment){
+    used = used || new Set();
+    assignment = assignment || new Map();
+    if(!slots.length) return assignment;
+    var selectedIndex = 0;
+    var selectedCount = Infinity;
+    slots.forEach(function(slot, index){
+      var lane = categories[slot.laneIndex].name;
+      var count = configuration.characters.filter(function(entry){
+        return !used.has(entry.character) && configuredWeight(configuration, entry.character, lane) > 0;
+      }).length;
+      if(count < selectedCount){ selectedCount = count; selectedIndex = index; }
+    });
+    if(selectedCount === 0) return null;
+    var slot = slots[selectedIndex];
+    var lane = categories[slot.laneIndex].name;
+    var candidates = configuration.characters.map(function(entry){ return entry.character; })
+      .filter(function(character){
+        return !used.has(character) && configuredWeight(configuration, character, lane) > 0;
+      });
+    var nextSlots = slots.filter(function(_, index){ return index !== selectedIndex; });
+    var ordered = groupingWeightedOrder(candidates, lane, configuration, previousRoles, rng);
+    for(var i=0;i<ordered.length;i++){
+      var character = ordered[i];
+      var nextUsed = new Set(used);
+      nextUsed.add(character);
+      var nextAssignment = new Map(assignment);
+      nextAssignment.set(slot.team + ":" + slot.laneIndex, character);
+      var result = groupingAssign(nextSlots, categories, configuration, previousRoles, rng, nextUsed, nextAssignment);
+      if(result) return result;
+    }
+    return null;
+  }
+
+  function shuffleWith(values, rng){
+    var result = values.slice();
+    for(var index = result.length - 1; index > 0; index--){
+      var randomIndex = Math.floor(rng() * (index + 1));
+      var temp = result[index];
+      result[index] = result[randomIndex];
+      result[randomIndex] = temp;
+    }
+    return result;
+  }
+
+  function generateGroupingResult(poolText, lastGameText, allowDuplicate, savedConfiguration, seed){
+    var categories = parseGroupingCategories(poolText);
+    if(!categories.length) throw new Error("角色池格式不正确或为空。");
+    var configuration = reconcileWeightConfig(categories, savedConfiguration);
+    if(!allowDuplicate){
+      var invalid = categories.find(function(category){
+        return configuration.characters.filter(function(entry){
+          return configuredWeight(configuration, entry.character, category.name) > 0;
+        }).length < 2;
+      });
+      if(invalid) throw new Error("分路“" + invalid.name + "”的可用角色数量不足 2 个。请补充角色，或开启镜像模式。");
+    }
+    var previousRoles = previousRoleSet(lastGameText);
+    var rng = randomMulberry32(seed);
+    var assignmentA;
+    var assignmentB;
+    if(allowDuplicate){
+      assignmentA = groupingAssign(categories.map(function(_, laneIndex){ return { team:"A", laneIndex:laneIndex }; }), categories, configuration, previousRoles, rng);
+      assignmentB = groupingAssign(categories.map(function(_, laneIndex){ return { team:"B", laneIndex:laneIndex }; }), categories, configuration, previousRoles, rng);
+    } else {
+      var slots = [];
+      categories.forEach(function(_, laneIndex){
+        slots.push({ team:"A", laneIndex:laneIndex }, { team:"B", laneIndex:laneIndex });
+      });
+      var assignment = groupingAssign(slots, categories, configuration, previousRoles, rng);
+      assignmentA = assignmentB = assignment;
+    }
+    if(!assignmentA || !assignmentB){
+      throw new Error("当前分路权重无法组成完整且不重复的阵容。请调整权重、补充角色，或开启镜像模式。");
+    }
+    var rolesA = categories.map(function(_, index){ return assignmentA.get("A:" + index); });
+    var rolesB = categories.map(function(_, index){ return assignmentB.get("B:" + index); });
+    var players = shuffleWith(Array.from({ length:categories.length * 2 }, function(_, index){ return index + 1; }), rng);
+    return {
+      seed: seed,
+      playersA: players.slice(0, categories.length),
+      playersB: players.slice(categories.length),
+      rolesA: rolesA,
+      rolesB: rolesB
+    };
+  }
+
+  function formatGroupingResult(result){
+    return "Group A\n" + result.playersA.join("，") + "\n" + result.rolesA.join("，") +
+      "\n\nGroup B\n" + result.playersB.join("，") + "\n" + result.rolesB.join("，");
+  }
+
+  function replacementCandidates(result, team, index, poolText, allowDuplicate, configuration){
+    var categories = parseGroupingCategories(poolText);
+    var lane = categories[index] && categories[index].name;
+    if(!lane) return [];
+    var sameTeam = team === "A" ? result.rolesA : result.rolesB;
+    var forbidden = new Set(allowDuplicate ? sameTeam : result.rolesA.concat(result.rolesB));
+    return configuration.characters.map(function(entry){ return entry.character; })
+      .filter(function(character){
+        return character !== sameTeam[index] && !forbidden.has(character) && configuredWeight(configuration, character, lane) > 0;
+      });
+  }
+
+  function copyPlainText(text, done){
+    function fallback(){
+      var area = document.createElement("textarea");
+      area.value = text;
+      area.style.position = "fixed";
+      area.style.opacity = "0";
+      document.body.appendChild(area);
+      area.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch(e){ ok = false; }
+      document.body.removeChild(area);
+      if(done) done(ok);
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(function(){ if(done) done(true); }, fallback);
+      return;
+    }
+    fallback();
+  }
+
+  /* ---------- Random room rendering ---------- */
+
+  function renderRandomResult(){
+    if(!els.randomEmpty || !els.randomResult) return;
+    var has = !!randomResult;
+    els.randomEmpty.classList.toggle("hidden", has);
+    els.randomResult.classList.toggle("hidden", !has);
+    els.randomSeed.textContent = has ? "种子 " + randomResult.seed : "";
+    if(!has){
+      els.randomTeams.innerHTML = "";
+      els.randomOutput.textContent = "";
+      return;
+    }
+    var teams = ["A", "B"].map(function(team){
+      var roles = team === "A" ? randomResult.rolesA : randomResult.rolesB;
+      var players = team === "A" ? randomResult.playersA : randomResult.playersB;
+      var playerHtml = players.map(function(player){ return '<span class="player-badge">' + player + '</span>'; }).join("");
+      var chips = roles.map(function(role, index){
+        var lane = randomResultCategories[index] ? randomResultCategories[index].name : "分路 " + (index + 1);
+        var swapped = randomSwappedSlots.has(team + ":" + index);
+        return '<button type="button" class="result-role' + (swapped ? " swapped" : "") + '" data-random-team="' + team + '" data-random-index="' + index + '" aria-label="' + escapeHtml(team + " 队 " + lane + " " + (role || "空") + "，点按按权重更换") + '" title="点按按当前分路权重随机更换">' +
+          '<small>' + escapeHtml(lane) + '</small>' +
+          '<b>' + (swapped ? '<span class="swap-mark">↻</span>' : '') + escapeHtml(role || "—") + '</b>' +
+        '</button>';
+      }).join("");
+      return '<div class="result-team ' + (team === "A" ? "a" : "b") + '">' +
+        '<div class="result-team-head"><span class="result-title">Group ' + team + '</span><span class="result-side">' + team + ' 队</span></div>' +
+        '<div class="result-players" aria-label="玩家 ' + players.join("，") + '">' + playerHtml + '</div>' +
+        '<div class="result-roles">' + chips + '</div>' +
+      '</div>';
+    }).join("");
+    els.randomTeams.innerHTML = teams;
+    els.randomOutput.textContent = formatGroupingResult(randomResult);
+  }
+
+  function updateRandomPoolPreview(){
+    if(!els.randomPoolPreview) return;
+    var text = els.randomPoolTextarea.value;
+    var categories = parseGroupingCategories(text);
+    var parsed = parsePoolText(text);
+    var notes = [];
+    var tone = "";
+    if(!categories.length || parsed.total === 0){
+      notes.push("未解析到角色，请检查格式");
+      tone = "bad";
+    } else if(parsed.total < 12){
+      notes.push("BO3 模式至少需要 12 名角色；随机分组仍可尝试");
+      tone = "warn";
+    }
+    if(parsed.duplicates.length){
+      notes.push("已忽略重复：" + parsed.duplicates.slice(0, 5).join("、") + (parsed.duplicates.length > 5 ? " 等" : ""));
+      if(!tone) tone = "warn";
+    }
+    if(randomResult && randomResultCategories.length !== categories.length){
+      notes.push("分路数量已变化，重新分组后结果会按新分路生成");
+      if(!tone) tone = "warn";
+    }
+    els.randomPoolPreview.className = "pool-preview " + tone;
+    els.randomPoolPreview.innerHTML =
+      '<span><b>' + parsed.roles.length + '</b> 个分类 · <b>' + parsed.total + '</b> 名角色</span>' +
+      (notes.length ? '<span class="' + (tone === "bad" ? "" : "warn") + '">' + escapeHtml(notes.join("；")) + '</span>' : '<span>格式正常</span>');
+  }
+
+  function syncRandomView(){
+    if(!els.randomPoolTextarea) return;
+    els.randomPoolTextarea.value = state.poolText;
+    updateRandomPoolPreview();
+    renderRandomResult();
+  }
+
+  function generateRandomGroups(){
+    if(!els.randomGenerateBtn) return;
+    var categories = parseGroupingCategories(state.poolText);
+    if(!categories.length){ toast("角色池格式不正确或为空", "warn"); return; }
+    try {
+      var preceding = previousRolesTextFromResult(randomResult);
+      var configuration = readWeightConfig(state.poolText);
+      var result = generateGroupingResult(
+        state.poolText,
+        els.randomAvoidPrevious.checked ? preceding : "",
+        els.randomAllowDuplicate.checked,
+        configuration,
+        Date.now()
+      );
+      randomPreviousRolesText = preceding;
+      randomResult = result;
+      randomResultCategories = categories;
+      randomSwappedSlots.clear();
+      randomHistoryId = recordRandomHistory(result, categories, els.randomAllowDuplicate.checked, els.randomAvoidPrevious.checked);
+      renderRandomResult();
+      if(els.randomResultCard){
+        try { els.randomResultCard.scrollIntoView({ behavior:"smooth", block:"start" }); }
+        catch(e){ els.randomResultCard.scrollIntoView(); }
+      }
+      toast("分组完成", "success");
+    } catch(error) {
+      toast(error && error.message ? error.message : "分组失败", "warn", 3600);
+    }
+  }
+
+  function replaceRandomRole(team, index){
+    if(!randomResult) return;
+    var lane = randomResultCategories[index] && randomResultCategories[index].name;
+    if(!lane) return;
+    var configuration = readWeightConfig(state.poolText);
+    var candidates = replacementCandidates(
+      randomResult,
+      team,
+      index,
+      state.poolText,
+      els.randomAllowDuplicate.checked,
+      configuration
+    );
+    var previousRoles = previousRoleSet(els.randomAvoidPrevious.checked ? randomPreviousRolesText : "");
+    var replacement = groupingPickWeighted(candidates, lane, configuration, previousRoles, randomMulberry32(Date.now()));
+    if(!replacement){
+      toast("这个分路没有其他权重大于 0 的可用角色。请调整分路权重、补充角色，或开启镜像模式。", "warn", 3600);
+      return;
+    }
+    (team === "A" ? randomResult.rolesA : randomResult.rolesB)[index] = replacement;
+    randomSwappedSlots.add(team + ":" + index);
+    updateRandomHistory();
+    renderRandomResult();
+  }
+
+  function applyRandomPool(){
+    var text = els.randomPoolTextarea.value;
+    var categories = parseGroupingCategories(text);
+    var parsed = parsePoolText(text);
+    if(!categories.length || parsed.total === 0){
+      toast("角色池格式不正确或为空", "warn");
+      return;
+    }
+    var previousLanes = randomResultCategories.map(function(category){ return category.name; }).join("|");
+    state.poolText = text;
+    refreshPoolData();
+    readWeightConfig(state.poolText);
+    saveState();
+    renderAll();
+    onSharedPoolChanged(previousLanes);
+    toast("角色池已更新：" + parsed.total + " 名角色", parsed.total < 12 ? "warn" : "success", 2800);
+  }
+
+  function onSharedPoolChanged(previousLanes){
+    if(!els.randomPoolTextarea) return;
+    readWeightConfig(state.poolText);
+    var categories = parseGroupingCategories(state.poolText);
+    var lanes = categories.map(function(category){ return category.name; }).join("|");
+    if(randomResult && previousLanes !== lanes){
+      randomResult = null;
+      randomPreviousRolesText = "";
+      randomSwappedSlots.clear();
+      randomHistoryId = null;
+    }
+    randomResultCategories = categories;
+    syncRandomView();
+    renderRandomResult();
+  }
+
+  /* ---------- Lane weight settings ---------- */
+
+  function weightRowValues(entry){
+    var values = [];
+    for(var i=0;i<weightCategories.length;i++){
+      var raw = entry.laneWeights[weightCategories[i].name];
+      if(raw == null || String(raw).trim() === "") return null;
+      var value = Number(raw);
+      if(!Number.isInteger(value) || value < 0) return null;
+      values.push(value);
+    }
+    return values;
+  }
+
+  function weightInput(character, lane){
+    var inputs = els.weightList.querySelectorAll(".weight-input");
+    for(var i=0;i<inputs.length;i++){
+      if(inputs[i].dataset.character === character && inputs[i].dataset.lane === lane) return inputs[i];
+    }
+    return null;
+  }
+
+  function updateWeightTotal(entry){
+    var indicators = els.weightList.querySelectorAll("[data-total-for]");
+    var indicator = null;
+    for(var i=0;i<indicators.length;i++){
+      if(indicators[i].dataset.totalFor === entry.character){ indicator = indicators[i]; break; }
+    }
+    if(!indicator) return;
+    var values = weightRowValues(entry);
+    var total = values ? values.reduce(function(sum, value){ return sum + value; }, 0) : null;
+    indicator.className = "weight-total";
+    if(total === null){ indicator.textContent = "请输入整数"; indicator.classList.add("invalid"); return; }
+    if(total === 100){ indicator.textContent = "100 / 100"; indicator.classList.add("complete"); return; }
+    if(total < 100){ indicator.textContent = "还差 " + (100 - total); return; }
+    indicator.textContent = "提交后自动换算";
+  }
+
+  function commitWeightRow(entry){
+    var values = weightRowValues(entry);
+    if(!values) return;
+    var normalized = normalizeWeightValues(values);
+    if(!normalized) return;
+    weightCategories.forEach(function(category, index){
+      entry.laneWeights[category.name] = normalized[index];
+      var input = weightInput(entry.character, category.name);
+      if(input) input.value = normalized[index];
+    });
+    updateWeightTotal(entry);
+  }
+
+  function weightDraftIsValid(){
+    if(!weightDraft) return false;
+    return weightDraft.characters.every(function(entry){
+      var values = weightRowValues(entry);
+      return values && values.reduce(function(sum, value){ return sum + value; }, 0) === 100;
+    });
+  }
+
+  function renderWeightRows(){
+    if(!weightDraft) return;
+    var host = els.weightList;
+    host.innerHTML = "";
+    var lanes = weightCategories.map(function(category){ return category.name; });
+    weightDraft.characters.forEach(function(entry){
+      var card = document.createElement("section");
+      card.className = "weight-card";
+      var head = document.createElement("div");
+      head.className = "weight-head";
+      var name = document.createElement("strong");
+      name.textContent = entry.character;
+      var total = document.createElement("span");
+      total.className = "weight-total";
+      total.dataset.totalFor = entry.character;
+      head.append(name, total);
+      card.appendChild(head);
+      var grid = document.createElement("div");
+      grid.className = "weight-lane-grid";
+      lanes.forEach(function(lane){
+        var label = document.createElement("label");
+        label.className = "weight-lane";
+        var caption = document.createElement("span");
+        caption.textContent = lane;
+        var input = document.createElement("input");
+        input.className = "weight-input";
+        input.type = "number";
+        input.min = "0";
+        input.step = "1";
+        input.inputMode = "numeric";
+        input.value = entry.laneWeights[lane] != null ? String(entry.laneWeights[lane]) : "0";
+        input.dataset.character = entry.character;
+        input.dataset.lane = lane;
+        input.setAttribute("aria-label", entry.character + " " + lane + "权重");
+        input.addEventListener("input", function(){
+          entry.laneWeights[lane] = input.value;
+          updateWeightTotal(entry);
+        });
+        input.addEventListener("change", function(){
+          entry.laneWeights[lane] = input.value;
+          commitWeightRow(entry);
+        });
+        label.append(caption, input);
+        grid.appendChild(label);
+      });
+      card.appendChild(grid);
+      host.appendChild(card);
+      updateWeightTotal(entry);
+    });
+  }
+
+  function setWeightStatus(message, tone){
+    if(!els.weightJsonStatus) return;
+    els.weightJsonStatus.textContent = message || "";
+    els.weightJsonStatus.className = "weight-status" + (tone ? " " + tone : "");
+  }
+
+  function openWeightSettings(){
+    var categories = parseGroupingCategories(state.poolText);
+    var total = 0;
+    categories.forEach(function(category){ total += category.roles.length; });
+    if(!categories.length || total === 0){
+      toast("请先在角色池中填写有效的角色", "warn");
+      return;
+    }
+    weightCategories = categories;
+    var configuration = readWeightConfig(state.poolText);
+    weightDraft = cloneWeightConfig(configuration);
+    renderWeightRows();
+    els.weightJsonPanel.open = false;
+    els.weightJsonText.value = "";
+    setWeightStatus("", "");
+    openModal(els.weightModal);
+    var body = els.weightModal.querySelector(".modal-body");
+    if(body) body.scrollTop = 0;
+  }
+
+  function resetWeightDraft(){
+    if(!weightDraft) return;
+    if(!confirm("按当前角色池重置所有角色的权重？修改需要点击「保存权重」后才会生效。")) return;
+    weightDraft = reconcileWeightConfig(weightCategories, null);
+    renderWeightRows();
+    setWeightStatus("已按角色池重置为默认权重，点击保存后生效。", "ok");
+  }
+
+  function saveWeightSettings(){
+    if(!weightDraft) return;
+    weightDraft.characters.forEach(function(entry){ commitWeightRow(entry); });
+    if(!weightDraftIsValid()){
+      setWeightStatus("每个角色的权重合计必须为 100，且只能使用非负整数。", "bad");
+      toast("请先完成每个角色的权重设置", "warn", 3200);
+      return;
+    }
+    saveWeightConfig(weightDraft);
+    closeModal(els.weightModal);
+    weightDraft = null;
+    toast("分路权重已保存", "success");
+  }
+
+  function closeWeightSettings(force){
+    if(!force && weightDraft && !weightDraftIsValid() && !confirm("存在未完成的权重设置，确定放弃修改吗？")) return;
+    closeModal(els.weightModal);
+    weightDraft = null;
+  }
+
+
+  /* ---------- Weight JSON import / export ---------- */
+
+  function parseWeightJSON(raw){
+    var payload;
+    try { payload = JSON.parse(String(raw || "")); } catch(e){ throw new Error("JSON 格式不正确。"); }
+    if(!payload || typeof payload !== "object" || Array.isArray(payload)) throw new Error("JSON 顶层必须是对象。");
+
+    var currentLanes = parseGroupingCategories(state.poolText).map(function(category){ return category.name; });
+    var lanes;
+    var characters;
+    var version;
+    if(Array.isArray(payload.lanes) && Array.isArray(payload.characters)){
+      lanes = payload.lanes;
+      characters = payload.characters;
+      version = payload.version;
+    } else if(Array.isArray(payload.characters)){
+      var used = new Set();
+      payload.characters.forEach(function(entry){
+        if(entry && entry.laneWeights && typeof entry.laneWeights === "object" && !Array.isArray(entry.laneWeights)){
+          Object.keys(entry.laneWeights).forEach(function(lane){ used.add(lane); });
+        }
+      });
+      var known = new Set(currentLanes);
+      var current = currentLanes.filter(function(lane){ return used.has(lane); });
+      var extra = Array.from(used).filter(function(lane){ return !known.has(lane); }).sort();
+      lanes = current.concat(extra);
+      characters = payload.characters;
+      version = payload.version;
+    } else {
+      throw new Error("JSON 中缺少 characters 数组。");
+    }
+
+    if(version !== WEIGHT_VERSION) throw new Error("仅支持 version 为 1 的权重 JSON。");
+    if(!Array.isArray(lanes) || !lanes.length) throw new Error("lanes 必须是非空数组。");
+    var trimmedLanes = lanes.map(function(lane){ return typeof lane === "string" ? lane.trim() : ""; });
+    if(trimmedLanes.some(function(lane){ return !lane; }) || new Set(trimmedLanes).size !== trimmedLanes.length){
+      throw new Error("lanes 必须是非空且不重复的字符串。");
+    }
+    if(!characters.length) throw new Error("characters 不能为空。");
+
+    var names = characters.map(function(entry){
+      if(!entry || typeof entry !== "object" || typeof entry.character !== "string"){
+        throw new Error("每个角色条目都必须包含字符串 character。");
+      }
+      var name = entry.character.trim();
+      if(!name) throw new Error("角色名称不能为空。");
+      return name;
+    });
+    if(new Set(names).size !== names.length) throw new Error("角色名称不能重复。");
+
+    var laneSet = new Set(trimmedLanes);
+    var canonical = characters.map(function(entry, index){
+      var laneWeights = entry.laneWeights;
+      if(!laneWeights || typeof laneWeights !== "object" || Array.isArray(laneWeights)){
+        throw new Error("角色“" + names[index] + "”缺少有效的 laneWeights。");
+      }
+      Object.keys(laneWeights).forEach(function(lane){
+        if(!laneSet.has(lane)){
+          throw new Error("角色“" + names[index] + "”使用了 lanes 中不存在的分路：“" + lane + "”。");
+        }
+      });
+      var weights = {};
+      var total = 0;
+      trimmedLanes.forEach(function(lane){
+        var value = laneWeights[lane] == null ? 0 : laneWeights[lane];
+        if(!Number.isInteger(value) || value < 0){
+          throw new Error("角色“" + names[index] + "”的权重必须是非负整数。");
+        }
+        weights[lane] = value;
+        total += value;
+      });
+      if(total !== 100){
+        throw new Error("角色“" + names[index] + "”的权重合计必须为 100（当前 " + total + "）。");
+      }
+      var primary = trimmedLanes[0];
+      var best = -1;
+      trimmedLanes.forEach(function(lane){
+        if(weights[lane] > best){
+          best = weights[lane];
+          primary = lane;
+        }
+      });
+      return { character:names[index], laneWeights:weights, sourceLane:primary };
+    });
+
+    var grouped = new Map();
+    trimmedLanes.forEach(function(lane){ grouped.set(lane, []); });
+    canonical.forEach(function(entry){
+      var list = grouped.get(entry.sourceLane);
+      if(list) list.push(entry.character);
+    });
+    var poolText = trimmedLanes.map(function(lane){
+      return lane + "：" + (grouped.get(lane) || []).join("、");
+    }).join("\n");
+    return { configuration: { version:WEIGHT_VERSION, characters:canonical }, poolText:poolText };
+  }
+
+  function importWeightText(raw){
+    try {
+      var imported = parseWeightJSON(raw);
+      var previousLanes = parseGroupingCategories(state.poolText).map(function(category){ return category.name; }).join("|");
+      state.poolText = imported.poolText;
+      refreshPoolData();
+      saveState();
+      saveWeightConfig(imported.configuration);
+      weightCategories = parseGroupingCategories(state.poolText);
+      weightDraft = cloneWeightConfig(reconcileWeightConfig(weightCategories, imported.configuration));
+      renderWeightRows();
+      var body = els.weightModal.querySelector(".modal-body");
+      if(body) body.scrollTop = 0;
+      els.weightJsonPanel.open = true;
+      setWeightStatus("导入成功：角色池与权重已更新。", "ok");
+      renderAll();
+      onSharedPoolChanged(previousLanes);
+      toast("权重 JSON 导入成功", "success", 2800);
+    } catch(error) {
+      var message = error && error.message ? error.message : "导入失败。";
+      setWeightStatus(message, "bad");
+      toast(message, "warn", 3600);
+    }
+  }
+
+  function exportWeightJSON(){
+    if(!weightDraft) return;
+    weightDraft.characters.forEach(function(entry){ commitWeightRow(entry); });
+    if(!weightDraftIsValid()){
+      setWeightStatus("请先让每个角色的权重合计为 100。", "bad");
+      toast("请先完成每个角色的权重设置", "warn", 3200);
+      return;
+    }
+    var lanes = weightCategories.map(function(category){ return category.name; });
+    var payload = {
+      version: WEIGHT_VERSION,
+      lanes: lanes,
+      characters: weightDraft.characters.map(function(entry){
+        var laneWeights = {};
+        lanes.forEach(function(lane){ laneWeights[lane] = Number(entry.laneWeights[lane]) || 0; });
+        return {
+          character: entry.character,
+          laneWeights: laneWeights,
+          sourceLane: entry.sourceLane || null
+        };
+      })
+    };
+    var json = JSON.stringify(payload, null, 2);
+    els.weightJsonPanel.open = true;
+    els.weightJsonText.value = json;
+    els.weightJsonText.focus();
+    els.weightJsonText.select();
+    var pending = "已生成权重 JSON";
+    setWeightStatus(pending + "，正在复制…", "");
+    copyPlainText(json, function(ok){
+      if(els.weightJsonStatus.textContent.indexOf(pending) !== 0) return;
+      setWeightStatus(ok ? "已生成并复制权重 JSON。" : "已生成权重 JSON；复制失败，请从文本框手动复制。", ok ? "ok" : "");
+    });
+  }
+
+  /* ---------- Mode switching ---------- */
+
+  function loadActiveMode(){
+    try { return localStorage.getItem(ACTIVE_MODE_KEY) === "random" ? "random" : "bo3"; }
+    catch(e){ return "bo3"; }
+  }
+
+  function setMode(mode, silent){
+    activeMode = mode === "random" ? "random" : "bo3";
+    document.body.classList.toggle("mode-random", activeMode === "random");
+    document.body.classList.toggle("mode-bo3", activeMode === "bo3");
+    $$("#modeTabs .mode-tab").forEach(function(button){
+      var on = button.getAttribute("data-mode") === activeMode;
+      button.classList.toggle("active", on);
+      button.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    try { localStorage.setItem(ACTIVE_MODE_KEY, activeMode); } catch(e){}
+    if(activeMode === "random"){
+      syncRandomView();
+      if(!silent){
+        if(els.randomView) els.randomView.scrollTop = 0;
+        window.scrollTo(0, 0);
+      }
+    } else if(!silent){
+      renderAll();
+      window.scrollTo(0, 0);
+    }
+  }
+
+  function initRandomMode(){
+    if(!els.randomPoolTextarea) return;
+    readWeightConfig(state.poolText);
+    randomResultCategories = parseGroupingCategories(state.poolText);
+    els.randomPoolTextarea.value = state.poolText;
+    updateRandomPoolPreview();
+    renderRandomResult();
+    setMode(loadActiveMode(), true);
+  }
+
+
+
+  /* ---------- Activity history: random rooms + BO3 series ---------- */
+
+  var HISTORY_KEY = "moba_activity_history_v1";
+  var HISTORY_LIMIT = 100;
+  var historyFilter = "all";
+  var historyView = "records";
+  var historyStatsFilter = "all";
+  var randomHistoryId = null;
+  var activityHistory = loadActivityHistory();
+
+  function newHistoryId(){
+    return "h" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+  }
+
+  function isValidHistoryEntry(entry){
+    if(!entry || typeof entry !== "object" || typeof entry.id !== "string" || !isFinite(entry.createdAt)) return false;
+    if(entry.type === "random"){
+      var result = entry.result;
+      return !!(result && Array.isArray(result.playersA) && Array.isArray(result.playersB) && Array.isArray(result.rolesA) && Array.isArray(result.rolesB));
+    }
+    if(entry.type === "bo3"){
+      var completed = entry.completed !== false;
+      var championOk = entry.champion === "A" || entry.champion === "B";
+      if(!completed) championOk = entry.champion == null;
+      var gamesOk = Array.isArray(entry.games) &&
+        (!completed ? entry.games.some(function(game){ return game && game.winner; }) : true);
+      return !!(entry.teamNames && typeof entry.teamNames.A === "string" && typeof entry.teamNames.B === "string" &&
+        entry.score && Number.isInteger(entry.score.A) && Number.isInteger(entry.score.B) &&
+        championOk && gamesOk);
+    }
+    return false;
+  }
+
+  function loadActivityHistory(){
+    var raw = null;
+    try { raw = localStorage.getItem(HISTORY_KEY); } catch(e){ raw = null; }
+    if(!raw) return [];
+    try {
+      var parsed = JSON.parse(raw);
+      if(!Array.isArray(parsed)) return [];
+      return parsed.filter(isValidHistoryEntry)
+        .sort(function(a, b){ return b.createdAt - a.createdAt; })
+        .slice(0, HISTORY_LIMIT);
+    } catch(e){ return []; }
+  }
+
+  function saveActivityHistory(){
+    try { localStorage.setItem(HISTORY_KEY, JSON.stringify(activityHistory)); } catch(e){}
+  }
+
+  function updateHistoryBadge(){
+    if(!els.historyBtn || !els.historyCount) return;
+    var count = activityHistory.length;
+    els.historyCount.textContent = count > 99 ? "99+" : String(count);
+    els.historyCount.classList.toggle("hidden", count === 0);
+    els.historyBtn.title = count ? "查看 " + count + " 条随机房 / BO3 历史" : "暂无历史记录";
+  }
+
+  function addActivityHistory(entry){
+    activityHistory.unshift(entry);
+    if(activityHistory.length > HISTORY_LIMIT) activityHistory = activityHistory.slice(0, HISTORY_LIMIT);
+    saveActivityHistory();
+    updateHistoryBadge();
+    if(els.historyModal && els.historyModal.classList.contains("open")) renderHistory();
+  }
+
+  function updateActivityHistory(id, mutate){
+    var entry = activityHistory.find(function(item){ return item.id === id; });
+    if(!entry) return false;
+    mutate(entry);
+    saveActivityHistory();
+    if(els.historyModal && els.historyModal.classList.contains("open")) renderHistory();
+    return true;
+  }
+
+  function recordRandomHistory(result, categories, allowDuplicate, avoidPrevious){
+    var entry = {
+      id: newHistoryId(),
+      type: "random",
+      createdAt: Date.now(),
+      allowDuplicate: !!allowDuplicate,
+      avoidPrevious: !!avoidPrevious,
+      lanes: categories.map(function(category){ return category.name; }),
+      result: {
+        seed: result.seed,
+        playersA: result.playersA.slice(),
+        playersB: result.playersB.slice(),
+        rolesA: result.rolesA.slice(),
+        rolesB: result.rolesB.slice()
+      },
+      swapped: []
+    };
+    addActivityHistory(entry);
+    return entry.id;
+  }
+
+  function updateRandomHistory(){
+    if(!randomHistoryId || !randomResult) return;
+    updateActivityHistory(randomHistoryId, function(entry){
+      entry.result.rolesA = randomResult.rolesA.slice();
+      entry.result.rolesB = randomResult.rolesB.slice();
+      entry.swapped = Array.from(randomSwappedSlots);
+      entry.updatedAt = Date.now();
+    });
+  }
+
+  function recordBo3History(completed){
+    var wins = seriesWins();
+    var champion = wins.A >= 2 ? "A" : (wins.B >= 2 ? "B" : null);
+    var hasWinner = state.games.some(function(game){ return !!game.winner; });
+    if(!hasWinner) return;
+    completed = !!completed || !!champion;
+    if(completed && !champion) return;
+    if(!completed && seriesOver()) return;
+    if(!state.seriesId) state.seriesId = newHistoryId();
+    var playedGames = state.games.filter(function(game){ return !!game.winner; }).length;
+    var entry = {
+      id: state.seriesId,
+      type: "bo3",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      completed: completed,
+      champion: completed ? champion : null,
+      playedGames: playedGames,
+      teamNames: { A: state.teamNames.A, B: state.teamNames.B },
+      score: { A: wins.A, B: wins.B },
+      noBanGame3: !!state.settings.noBanGame3,
+      games: state.games.map(function(game){
+        return {
+          winner: game.winner || null,
+          noBan: !!game.noBan,
+          actions: (game.actions || []).map(function(action){
+            return { team: action.team, type: action.type, hero: action.hero, role: action.role };
+          })
+        };
+      })
+    };
+    var index = activityHistory.findIndex(function(item){ return item.type === "bo3" && item.id === entry.id; });
+    if(index >= 0){
+      entry.createdAt = activityHistory[index].createdAt;
+      activityHistory[index] = entry;
+      saveActivityHistory();
+      updateHistoryBadge();
+      if(els.historyModal && els.historyModal.classList.contains("open")) renderHistory();
+    } else {
+      addActivityHistory(entry);
+    }
+    saveState();
+    return entry;
+  }
+
+  /// Called before a global reset: a one-game (or two-game) series still gets
+  /// a BO3 history entry, marked as ended early instead of silently dropped.
+  function recordPartialBo3History(){
+    if(seriesOver()) return false;
+    if(!state.games.some(function(game){ return !!game.winner; })) return false;
+    // If this series was already completed and then reopened, keep the completed
+    // record instead of downgrading it to a partial one on reset.
+    if(state.seriesId && activityHistory.some(function(entry){
+      return entry.type === "bo3" && entry.id === state.seriesId && entry.completed !== false;
+    })) return false;
+    recordBo3History(false);
+    return true;
+  }
+
+  function pad2(value){
+    return value < 10 ? "0" + value : String(value);
+  }
+
+  function formatHistoryTime(timestamp){
+    var date = new Date(timestamp);
+    if(isNaN(date.getTime())) return "—";
+    return date.getFullYear() + "-" + pad2(date.getMonth() + 1) + "-" + pad2(date.getDate()) + " " +
+      pad2(date.getHours()) + ":" + pad2(date.getMinutes());
+  }
+
+  function historyRoleHtml(team, hero, lane, swapped){
+    return '<span class="history-role' + (swapped ? " swapped" : "") + '">' +
+      '<small>' + escapeHtml(lane) + '</small>' +
+      '<b>' + escapeHtml(hero || "—") + '</b>' +
+    '</span>';
+  }
+
+  function renderRandomHistoryCard(entry){
+    var result = entry.result;
+    var lanes = Array.isArray(entry.lanes) ? entry.lanes : [];
+    var swapped = new Set(Array.isArray(entry.swapped) ? entry.swapped : []);
+    function teamHtml(team){
+      var players = team === "A" ? result.playersA : result.playersB;
+      var roles = team === "A" ? result.rolesA : result.rolesB;
+      var rolesHtml = roles.map(function(hero, index){
+        return historyRoleHtml(team, hero, lanes[index] || ("分路 " + (index + 1)), swapped.has(team + ":" + index));
+      }).join("");
+      return '<div class="history-team ' + (team === "A" ? "a" : "b") + '">' +
+        '<div class="history-team-title"><span>' + team + ' 队</span><span class="history-players">' + players.join(" · ") + '</span></div>' +
+        '<div class="history-roles">' + rolesHtml + '</div>' +
+      '</div>';
+    }
+    var tags = [];
+    tags.push(entry.allowDuplicate ? "镜像" : "不重复");
+    if(entry.avoidPrevious) tags.push("避让上一轮");
+    if(lanes.length) tags.push(lanes.join(" / "));
+    var seed = result.seed != null ? String(result.seed) : "";
+    return '<article class="history-card">' +
+      '<div class="history-card-head">' +
+        '<span class="history-type random">随机房</span>' +
+        '<time class="history-time">' + formatHistoryTime(entry.createdAt) + '</time>' +
+        '<span class="history-seed">种子 ' + escapeHtml(seed) + '</span>' +
+      '</div>' +
+      '<div class="history-tags">' + tags.map(function(tag){ return '<span class="history-tag">' + escapeHtml(tag) + '</span>'; }).join("") + '</div>' +
+      '<div class="history-teams">' + teamHtml("A") + teamHtml("B") + '</div>' +
+    '</article>';
+  }
+
+  function renderBo3HistoryCard(entry){
+    var names = entry.teamNames;
+    var score = entry.score;
+    var completed = entry.completed !== false;
+    var championName = entry.champion ? (names[entry.champion] || entry.champion) : "";
+    var playedGames = entry.playedGames != null
+      ? entry.playedGames
+      : entry.games.filter(function(game){ return game && game.winner; }).length;
+    var gamesHtml = entry.games.map(function(game, index){
+      if(!game || (!game.winner && (!game.actions || !game.actions.length))) return "";
+      var winnerLabel = game.winner ? (names[game.winner] || game.winner) + " 胜" : "未判定";
+      function lineup(team){
+        var actions = (game.actions || []).filter(function(action){ return action.team === team; });
+        var bans = actions.filter(function(action){ return action.type === "ban"; }).map(function(action){ return action.hero; });
+        var picks = actions.filter(function(action){ return action.type === "pick"; }).map(function(action){ return action.hero; });
+        return '<div class="history-line">' +
+          '<b class="' + (team === "A" ? "a" : "b") + '">' + escapeHtml(team === "A" ? names.A : names.B) + '</b>' +
+          '<span>禁：' + escapeHtml(bans.length ? bans.join("、") : "—") + '</span>' +
+          '<span>选：' + escapeHtml(picks.length ? picks.join("、") : "—") + '</span>' +
+        '</div>';
+      }
+      return '<div class="history-game">' +
+        '<div class="history-game-title">第 ' + (index + 1) + ' 局 <span>' + escapeHtml(winnerLabel) + '</span>' + (game.noBan ? '<span>无 BAN</span>' : '') + '</div>' +
+        lineup("A") + lineup("B") +
+      '</div>';
+    }).join("");
+    var gameChips = entry.games.map(function(game, index){
+      if(!game || (!game.winner && (!game.actions || !game.actions.length))) return "";
+      var cls = game.winner === "A" ? "a" : (game.winner === "B" ? "b" : "");
+      return '<span class="history-game-chip ' + cls + '">G' + (index + 1) + ' ' + (game.winner ? escapeHtml(names[game.winner] || game.winner) + ' 胜' : '未判定') + '</span>';
+    }).join("");
+    return '<article class="history-card">' +
+      '<div class="history-card-head">' +
+        '<span class="history-type bo3">BO3</span>' +
+        (completed ? '' : '<span class="history-tag history-status">提前重置</span>') +
+        '<time class="history-time">' + formatHistoryTime(entry.createdAt) + '</time>' +
+        '<span class="history-bo3-result">' + escapeHtml(names.A) + ' ' + score.A + ' : ' + score.B + ' ' + escapeHtml(names.B) + '</span>' +
+      '</div>' +
+      '<div class="history-champion' + (completed ? '' : ' partial') + '">' +
+        (completed ? escapeHtml(championName) + ' 赢得系列赛' : '提前重置 · 已完成 ' + playedGames + ' 局') +
+      '</div>' +
+      '<div class="history-game-results">' + gameChips + '</div>' +
+      (gamesHtml ? '<details class="history-games"><summary>查看每局阵容</summary>' + gamesHtml + '</details>' : '') +
+    '</article>';
+  }
+
+  function emptyHistoryHtml(){
+    var text = historyFilter === "random" ? "暂无随机房记录" : (historyFilter === "bo3" ? "暂无 BO3 记录" : "暂无历史记录");
+    return '<div class="history-empty"><div style="font-size:26px;opacity:.7">🕘</div><b>' + text + '</b>' +
+      '<span>开始随机分组或完成一场 BO3 后，记录会出现在这里。</span></div>';
+  }
+
+  function renderHistory(){
+    if(!els.historyList) return;
+    var randomCount = 0;
+    var bo3Count = 0;
+    activityHistory.forEach(function(entry){
+      if(entry.type === "random") randomCount++;
+      else if(entry.type === "bo3") bo3Count++;
+    });
+    if(els.historyAllCount) els.historyAllCount.textContent = String(activityHistory.length);
+    if(els.historyRandomCount) els.historyRandomCount.textContent = String(randomCount);
+    if(els.historyBo3Count) els.historyBo3Count.textContent = String(bo3Count);
+    $$("#historyFilters .history-filter").forEach(function(button){
+      var on = button.getAttribute("data-history-filter") === historyFilter;
+      button.classList.toggle("active", on);
+      button.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    if(els.historyClearBtn) els.historyClearBtn.disabled = activityHistory.length === 0;
+    var entries = activityHistory.filter(function(entry){ return historyFilter === "all" || entry.type === historyFilter; });
+    els.historyList.innerHTML = entries.length
+      ? entries.map(function(entry){ return entry.type === "random" ? renderRandomHistoryCard(entry) : renderBo3HistoryCard(entry); }).join("")
+      : emptyHistoryHtml();
+    if(historyView === "stats") renderHistoryStats();
+  }
+
+  function setHistoryView(view){
+    historyView = view === "stats" ? "stats" : "records";
+    $$("#historyViewTabs .history-view-tab").forEach(function(button){
+      var on = button.getAttribute("data-history-view") === historyView;
+      button.classList.toggle("active", on);
+      button.setAttribute("aria-selected", on ? "true" : "false");
+    });
+    if(els.historyRecordsView) els.historyRecordsView.classList.toggle("hidden", historyView !== "records");
+    if(els.historyStatsView) els.historyStatsView.classList.toggle("hidden", historyView !== "stats");
+    if(historyView === "stats") renderHistoryStats();
+    else renderHistory();
+  }
+
+  function openHistory(){
+    historyFilter = "all";
+    historyStatsFilter = "all";
+    setHistoryView("records");
+    openModal(els.historyModal);
+    var body = els.historyModal.querySelector(".modal-body");
+    if(body) body.scrollTop = 0;
+  }
+
+  function clearActivityHistory(){
+    if(!activityHistory.length) return;
+    if(!confirm("清空全部随机房与 BO3 历史记录？此操作不可撤销。")) return;
+    activityHistory = [];
+    randomHistoryId = null;
+    saveActivityHistory();
+    updateHistoryBadge();
+    renderHistory();
+    toast("历史记录已清空", "success");
+  }
+
+  function initHistory(){
+    updateHistoryBadge();
+    if(els.historyList) renderHistory();
+  }
+
+
+
+  /* ---------- BO3 / BO1 per-hero statistics ---------- */
+
+  function historyStatsEntries(){
+    return activityHistory.filter(function(entry){
+      if(entry.type !== "bo3") return false;
+      if(historyStatsFilter === "all") return true;
+      if(historyStatsFilter === "completed") return entry.completed !== false;
+      return entry.completed === false;
+    });
+  }
+
+  function computeHistoryStats(entries){
+    var totalGames = 0;
+    var stats = new Map();
+    entries.forEach(function(entry){
+      (entry.games || []).forEach(function(game){
+        if(!game || (game.winner !== "A" && game.winner !== "B")) return;
+        totalGames++;
+        (game.actions || []).forEach(function(action){
+          if(!action || typeof action.hero !== "string" || !action.hero) return;
+          var row = stats.get(action.hero) || { hero: action.hero, picks: 0, wins: 0, bans: 0 };
+          if(action.type === "pick"){
+            row.picks++;
+            if(action.team === game.winner) row.wins++;
+          } else if(action.type === "ban"){
+            row.bans++;
+          }
+          stats.set(action.hero, row);
+        });
+      });
+    });
+    var rows = Array.from(stats.values()).map(function(row){
+      row.winRate = row.picks ? row.wins / row.picks : null;
+      row.banRate = totalGames ? row.bans / totalGames : 0;
+      return row;
+    });
+    rows.sort(function(a, b){
+      var involvementA = a.picks + a.bans;
+      var involvementB = b.picks + b.bans;
+      if(involvementA !== involvementB) return involvementB - involvementA;
+      if(a.picks !== b.picks) return b.picks - a.picks;
+      if(a.bans !== b.bans) return b.bans - a.bans;
+      return a.hero.localeCompare(b.hero);
+    });
+    return { totalGames: totalGames, rows: rows };
+  }
+
+  function renderHistoryStats(){
+    if(!els.historyStatsTable) return;
+    var entries = historyStatsEntries();
+    var completedCount = entries.filter(function(entry){ return entry.completed !== false; }).length;
+    var partialCount = entries.filter(function(entry){ return entry.completed === false; }).length;
+    $$("#historyStatsFilters .history-filter").forEach(function(button){
+      var on = button.getAttribute("data-history-stats") === historyStatsFilter;
+      button.classList.toggle("active", on);
+      button.setAttribute("aria-selected", on ? "true" : "false");
+    });
+
+    if(!entries.length){
+      els.historyStatsSummary.textContent = "统计 0 局";
+      els.historyStatsTable.innerHTML = '<div class="history-empty"><div style="font-size:26px;opacity:.7">📊</div><b>暂无 BO3 / BO1 对局数据</b><span>完成一场 BO3，或提前重置一局以上的系列赛后再查看。</span></div>';
+      return;
+    }
+
+    var computed = computeHistoryStats(entries);
+    els.historyStatsSummary.textContent = "统计 " + computed.totalGames + " 局 · " + entries.length + " 个系列（完整 " + completedCount + " / 提前重置 " + partialCount + "）";
+    if(!computed.totalGames || !computed.rows.length){
+      els.historyStatsTable.innerHTML = '<div class="history-empty"><div style="font-size:26px;opacity:.7">📊</div><b>所选范围内暂无可统计的对局</b><span>仅统计有胜者的对局。</span></div>';
+      return;
+    }
+
+    var head = '<div class="history-stats-head">' +
+      '<span>角色</span><span>选用</span><span>胜场</span><span>胜率</span><span>BAN</span><span>被 BAN 率</span>' +
+    '</div>';
+    var rowsHtml = computed.rows.map(function(row){
+      var winText = row.winRate === null ? "—" : Math.round(row.winRate * 100) + "%";
+      var banText = Math.round(row.banRate * 100) + "%";
+      var winTone = row.winRate === null ? " na" : (row.winRate >= 0.5 ? " win" : " loss");
+      var banTone = row.bans > 0 ? " ban" : " na";
+      var title = row.hero + "：选用 " + row.picks + " 局，胜 " + row.wins + " 局，胜率 " + winText +
+        "；被 BAN " + row.bans + " 局，被 BAN 率 " + banText;
+      return '<div class="history-stat-row" title="' + escapeHtml(title) + '">' +
+        '<span class="history-stat-hero">' + escapeHtml(row.hero) + '</span>' +
+        '<span class="history-stat-num">' + row.picks + '</span>' +
+        '<span class="history-stat-num">' + row.wins + '</span>' +
+        '<span class="history-stat-rate' + winTone + '">' + winText + '</span>' +
+        '<span class="history-stat-num">' + row.bans + '</span>' +
+        '<span class="history-stat-rate' + banTone + '">' + banText + '</span>' +
+      '</div>';
+    }).join("");
+    els.historyStatsTable.innerHTML = '<div class="history-stats-inner">' + head + rowsHtml + '</div>';
+  }
+
+  /* ---------- History JSON backup ---------- */
+
+  // File format (version 1):
+  // {
+  //   "schema": "moba-random.history",
+  //   "version": 1,
+  //   "exportedAt": 1795422350175,
+  //   "records": [ { "type": "random", ... }, { "type": "bo3", "completed": true|false, ... } ]
+  // }
+  function formatHistoryFileStamp(date){
+    return date.getFullYear() + pad2(date.getMonth() + 1) + pad2(date.getDate()) + "-" + pad2(date.getHours()) + pad2(date.getMinutes());
+  }
+
+  function exportHistory(){
+    if(!activityHistory.length){ toast("暂无历史记录可导出", "warn"); return; }
+    var payload = {
+      schema: "moba-random.history",
+      version: 1,
+      exportedAt: Date.now(),
+      records: activityHistory
+    };
+    var json = JSON.stringify(payload, null, 2);
+    var blob = new Blob([json], { type: "application/json" });
+    var url = URL.createObjectURL(blob);
+    var link = document.createElement("a");
+    link.href = url;
+    link.download = "moba-history-" + formatHistoryFileStamp(new Date()) + ".json";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+    toast("已导出 " + activityHistory.length + " 条历史记录", "success");
+  }
+
+  function normalizeImportedHistoryEntry(entry){
+    if(!isValidHistoryEntry(entry)) return null;
+    var createdAt = Number(entry.createdAt);
+    if(!Number.isFinite(createdAt)) return null;
+    var updatedAt = Number.isFinite(Number(entry.updatedAt)) ? Number(entry.updatedAt) : createdAt;
+    var id = String(entry.id || "").slice(0, 100);
+    if(!id) return null;
+
+    function stringArray(value, max){
+      return (Array.isArray(value) ? value : []).filter(function(item){ return typeof item === "string"; })
+        .slice(0, max).map(function(item){ return item.slice(0, 80); });
+    }
+    function playerArray(value){
+      return (Array.isArray(value) ? value : []).slice(0, 20).map(Number).filter(function(number){ return Number.isFinite(number); });
+    }
+
+    if(entry.type === "random"){
+      var result = entry.result;
+      return {
+        id: id,
+        type: "random",
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+        allowDuplicate: !!entry.allowDuplicate,
+        avoidPrevious: !!entry.avoidPrevious,
+        lanes: stringArray(entry.lanes, 20),
+        result: {
+          seed: Number.isFinite(Number(result.seed)) ? Number(result.seed) : 0,
+          playersA: playerArray(result.playersA),
+          playersB: playerArray(result.playersB),
+          rolesA: stringArray(result.rolesA, 20),
+          rolesB: stringArray(result.rolesB, 20)
+        },
+        swapped: stringArray(entry.swapped, 40)
+      };
+    }
+
+    var completed = entry.completed !== false;
+    var champion = entry.champion === "A" || entry.champion === "B" ? entry.champion : null;
+    if(completed && !champion) return null;
+    if(!completed && champion) return null;
+    var games = (entry.games || []).slice(0, 3).map(function(game){
+      if(!game || typeof game !== "object") return { winner: null, noBan: false, actions: [] };
+      var actions = (Array.isArray(game.actions) ? game.actions : []).slice(0, 40).map(function(action){
+        if(!action || typeof action !== "object" ||
+           (action.team !== "A" && action.team !== "B") ||
+           (action.type !== "ban" && action.type !== "pick") ||
+           typeof action.hero !== "string") return null;
+        return {
+          team: action.team,
+          type: action.type,
+          hero: action.hero.slice(0, 40),
+          role: typeof action.role === "string" ? action.role.slice(0, 20) : ""
+        };
+      }).filter(Boolean);
+      return {
+        winner: game.winner === "A" || game.winner === "B" ? game.winner : null,
+        noBan: !!game.noBan,
+        actions: actions
+      };
+    });
+    if(!completed && !games.some(function(game){ return !!game.winner; })) return null;
+    return {
+      id: id,
+      type: "bo3",
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+      completed: completed,
+      champion: champion,
+      playedGames: Number.isInteger(entry.playedGames) ? entry.playedGames : games.filter(function(game){ return !!game.winner; }).length,
+      teamNames: {
+        A: (typeof entry.teamNames.A === "string" && entry.teamNames.A.trim()) ? entry.teamNames.A.slice(0, 16) : "A 队",
+        B: (typeof entry.teamNames.B === "string" && entry.teamNames.B.trim()) ? entry.teamNames.B.slice(0, 16) : "B 队"
+      },
+      score: {
+        A: Number.isInteger(entry.score.A) ? entry.score.A : 0,
+        B: Number.isInteger(entry.score.B) ? entry.score.B : 0
+      },
+      noBanGame3: !!entry.noBanGame3,
+      games: games
+    };
+  }
+
+  function importHistoryJSON(raw){
+    try {
+      var parsed = JSON.parse(String(raw || ""));
+      var records;
+      if(Array.isArray(parsed)){
+        records = parsed;
+      } else if(parsed && parsed.schema === "moba-random.history" && parsed.version === 1 && Array.isArray(parsed.records)){
+        records = parsed.records;
+      } else {
+        throw new Error("不是有效的历史文件（需要 schema=moba-random.history、version=1 和 records 数组）");
+      }
+      if(!records.length) throw new Error("历史文件中没有记录");
+      if(records.length > 500) throw new Error("历史文件记录过多（最多 500 条）");
+
+      var normalized = [];
+      var invalid = 0;
+      records.forEach(function(record){
+        var normalizedRecord = normalizeImportedHistoryEntry(record);
+        if(normalizedRecord) normalized.push(normalizedRecord);
+        else invalid++;
+      });
+      if(!normalized.length) throw new Error("历史文件中没有可导入的有效记录");
+
+      var added = 0;
+      var updated = 0;
+      var kept = 0;
+      normalized.forEach(function(record){
+        var index = activityHistory.findIndex(function(entry){
+          return entry.id === record.id && entry.type === record.type;
+        });
+        if(index < 0){
+          activityHistory.push(record);
+          added++;
+          return;
+        }
+        var existing = activityHistory[index];
+        var existingTime = Math.max(existing.updatedAt || 0, existing.createdAt || 0);
+        var importedTime = Math.max(record.updatedAt || 0, record.createdAt || 0);
+        if(importedTime >= existingTime){
+          activityHistory[index] = record;
+          updated++;
+        } else {
+          kept++;
+        }
+      });
+      activityHistory.sort(function(a, b){ return b.createdAt - a.createdAt; });
+      if(activityHistory.length > HISTORY_LIMIT) activityHistory = activityHistory.slice(0, HISTORY_LIMIT);
+      saveActivityHistory();
+      updateHistoryBadge();
+      renderHistory();
+      toast(
+        "导入完成：新增 " + added + " 条，更新 " + updated + " 条" +
+        (kept ? "，保留本地较新 " + kept + " 条" : "") +
+        (invalid ? "，跳过 " + invalid + " 条无效记录" : ""),
+        "success",
+        4200
+      );
+    } catch(error){
+      toast(error && error.message ? error.message : "历史文件导入失败", "warn", 4200);
+    }
+  }
+
+  function importHistoryFile(file){
+    if(!file) return;
+    if(file.size > 2 * 1024 * 1024){ toast("历史文件超过 2MB，无法导入", "warn"); return; }
+    var reader = new FileReader();
+    reader.onload = function(){ importHistoryJSON(String(reader.result || "")); };
+    reader.onerror = function(){ toast("读取历史文件失败", "warn"); };
+    reader.readAsText(file);
+  }
+
 
   /* ---------- Events ---------- */
 
@@ -2837,6 +4738,89 @@
     chooseHero(card.getAttribute("data-hero"));
   });
 
+
+  /* ---------- Random room / weight events ---------- */
+
+  $$("#modeTabs .mode-tab").forEach(function(button){
+    button.addEventListener("click", function(){
+      setMode(button.getAttribute("data-mode"));
+    });
+  });
+
+  els.randomApplyPoolBtn.addEventListener("click", applyRandomPool);
+  els.randomResetPoolBtn.addEventListener("click", function(){
+    if(!confirm("恢复默认角色池？当前角色池修改将丢失。")) return;
+    els.randomPoolTextarea.value = DEFAULT_POOL_TEXT;
+    applyRandomPool();
+  });
+  els.randomWeightsBtn.addEventListener("click", openWeightSettings);
+  els.randomGenerateBtn.addEventListener("click", generateRandomGroups);
+  els.randomRegenerateBtn.addEventListener("click", generateRandomGroups);
+  els.randomCopyBtn.addEventListener("click", function(){
+    if(!randomResult){ toast("还没有分组结果", "warn"); return; }
+    copyPlainText(formatGroupingResult(randomResult), function(ok){
+      toast(ok ? "已复制分组结果" : "复制失败，请手动选择文本", ok ? "success" : "warn");
+    });
+  });
+  els.randomTeams.addEventListener("click", function(e){
+    var chip = e.target.closest("[data-random-team]");
+    if(!chip) return;
+    replaceRandomRole(chip.getAttribute("data-random-team"), Number(chip.getAttribute("data-random-index")));
+  });
+
+  els.weightSaveBtn.addEventListener("click", saveWeightSettings);
+  els.weightCancelBtn.addEventListener("click", function(){ closeWeightSettings(); });
+  els.weightCloseBtn.addEventListener("click", function(){ closeWeightSettings(); });
+  els.weightResetBtn.addEventListener("click", resetWeightDraft);
+  els.weightExportBtn.addEventListener("click", exportWeightJSON);
+  els.weightImportBtn.addEventListener("click", function(){ importWeightText(els.weightJsonText.value); });
+  els.weightJsonFile.addEventListener("change", function(){
+    var file = this.files && this.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(){
+      var content = String(reader.result || "");
+      els.weightJsonText.value = content;
+      importWeightText(content);
+    };
+    reader.onerror = function(){ setWeightStatus("读取文件失败。", "bad"); };
+    reader.readAsText(file);
+    this.value = "";
+  });
+  els.weightModal.addEventListener("click", function(e){
+    if(e.target === els.weightModal){
+      e.stopImmediatePropagation();
+      closeWeightSettings();
+    }
+  });
+
+
+  els.historyBtn.addEventListener("click", openHistory);
+  els.historyFilters.addEventListener("click", function(e){
+    var button = e.target.closest("[data-history-filter]");
+    if(!button) return;
+    historyFilter = button.getAttribute("data-history-filter");
+    renderHistory();
+  });
+  els.historyClearBtn.addEventListener("click", clearActivityHistory);
+  $$("#historyViewTabs .history-view-tab").forEach(function(button){
+    button.addEventListener("click", function(){
+      setHistoryView(button.getAttribute("data-history-view"));
+    });
+  });
+  els.historyStatsFilters.addEventListener("click", function(e){
+    var button = e.target.closest("[data-history-stats]");
+    if(!button) return;
+    historyStatsFilter = button.getAttribute("data-history-stats");
+    renderHistoryStats();
+  });
+  els.historyExportBtn.addEventListener("click", exportHistory);
+  els.historyImportFile.addEventListener("change", function(){
+    var file = this.files && this.files[0];
+    if(file) importHistoryFile(file);
+    this.value = "";
+  });
+
   $$("[data-close]").forEach(function(btn){
     btn.addEventListener("click", function(){
       var id = btn.getAttribute("data-close");
@@ -2854,7 +4838,8 @@
     if(e.key === "Escape"){
       var open = $$(".modal-backdrop.open").pop();
       if(open){
-        closeModal(open);
+        if(open.id === "weightModal") closeWeightSettings();
+        else closeModal(open);
         return;
       }
     }
@@ -2862,6 +4847,7 @@
       var tag = document.activeElement && document.activeElement.tagName;
       if(tag === "INPUT" || tag === "TEXTAREA") return;
       if($(".modal-backdrop.open")) return;
+      if(document.body.classList.contains("mode-random")) return;
       e.preventDefault();
       undoAction();
     }
@@ -2874,6 +4860,8 @@
   els.search.value = state.ui.search || "";
   els.noBanGame3Check.checked = !!state.settings.noBanGame3;
   renderAll();
+  initRandomMode();
+  initHistory();
 })();
 </script>
 </body>
