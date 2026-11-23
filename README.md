@@ -1,7 +1,7 @@
 # MOBA 分组助手
 
 ## iOS
-[App Store链接](https://apps.apple.com/cn/app/%E9%9A%8F%E6%9C%BA%E6%88%BF%E5%88%86%E7%BB%84%E5%8A%A9%E6%89%8B/id6790402359)
+[App Store链接](https://apps.apple.com/app/%E9%9A%8F%E6%9C%BA%E6%88%BF%E5%88%86%E7%BB%84%E5%8A%A9%E6%89%8B/id6790402359)
 
 ## Android
 1. [Github下载](https://github.com/tropicalwzc/moba-random/releases/download/1.3/moba-random_1.3.0.apk)
