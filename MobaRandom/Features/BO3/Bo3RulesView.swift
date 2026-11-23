@@ -106,7 +106,7 @@ struct Bo3RulesView: View {
 
     private var attribution: some View {
         VStack(alignment: .leading, spacing: 5) {
-            Link("头像：原神观测枢", destination: URL(string: "https://baike.mihoyo.com/ys/obc/channel/map/189/25")!)
+            Text("头像来源：原神观测枢")
                 .font(.caption.weight(.semibold))
             Text("本应用为非官方工具，与米哈游无关。角色头像仅用于本地阵容展示。")
                 .font(.caption2)

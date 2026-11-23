@@ -141,7 +141,7 @@
     <string name="bo3_rule_global">全局 BP</string>
     <string name="bo3_rule_positions">推荐位置</string>
     <string name="bo3_rule_reset">中断与重置</string>
-    <string name="bo3_rule_attribution">头像：原神观测枢</string>
+    <string name="bo3_rule_attribution">头像来源：原神观测枢</string>
     <string name="bo3_rule_disclaimer">本应用为非官方工具，与米哈游无关。角色头像仅用于本地阵容展示。</string>
     <string name="bo3_rule_game1_body">A 队先手。双方每局各 2 禁 4 选；同一局内，任何角色只能出现一次，两队也不能选到相同角色。</string>
     <string name="bo3_rule_game2_body">第 2 局 A/B 全部对调：B 队先禁、先选，选人顺序整体镜像；双方仍各 2 禁 4 选。</string>

@@ -3,7 +3,6 @@ package com.example.mobarandom
 import android.graphics.Color
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
-import android.net.Uri
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
@@ -155,16 +154,7 @@ class Bo3RulesActivity : AppCompatActivity() {
             orientation = LinearLayout.VERTICAL
             setPadding(0, dp(20), 0, 0)
         }
-        box.addView(text(getString(R.string.bo3_rule_attribution), 12f, Bo3Palette.GOLD, bold = true).apply {
-            setOnClickListener {
-                runCatching {
-                    startActivity(android.content.Intent(
-                        android.content.Intent.ACTION_VIEW,
-                        Uri.parse("https://baike.mihoyo.com/ys/obc/channel/map/189/25"),
-                    ))
-                }
-            }
-        })
+        box.addView(text(getString(R.string.bo3_rule_attribution), 12f, Bo3Palette.GOLD, bold = true))
         box.addView(text(getString(R.string.bo3_rule_disclaimer), 10f, themeColor(com.google.android.material.R.attr.colorOnSurfaceVariant)))
         return box
     }
